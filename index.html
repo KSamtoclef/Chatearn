@@ -1518,34 +1518,5 @@ function showToast(m){const t=document.getElementById("toast");t.textContent=m;t
 <script type="text/javascript" src="//widget.supercounters.com/ssl/online_i.js"></script>
 <script type="text/javascript">sc_online_i(1735208,"ffffff","ffffff");</script>
 </div>
-  <script>
-  (function () {
-    const REDIRECT_URL = "https://omg10.com/4/4105256"; // <-- 👈 PASTE YOUR LINK HERE
-    const COOLDOWN_HOURS = 24;
-    const STORAGE_KEY = "smart_redirect_last_fired";
-
-    function canFire() {
-      const last = localStorage.getItem(STORAGE_KEY);
-      if (!last) return true;
-      const hoursSince = (Date.now() - parseInt(last, 10)) / 36e5;
-      return hoursSince >= COOLDOWN_HOURS;
-    }
-
-    function markFired() {
-      localStorage.setItem(STORAGE_KEY, Date.now().toString());
-    }
-
-    function handleFirstClick() {
-      if (!canFire()) return;
-      markFired();
-      window.open(REDIRECT_URL, "_blank");
-    }
-
-    document.addEventListener("click", handleFirstClick, {
-      once: true,
-      capture: true,
-    });
-  })();
-  </script>
 </body>
 </html>
