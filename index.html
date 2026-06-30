@@ -1376,30 +1376,7 @@ function promptWithdraw(){
   const body=document.getElementById("chatBody");
   const notice=document.createElement("div");notice.id="wdPromptNotice";
   notice.style.cssText="background:rgba(0,200,83,.12);border:1px solid rgba(0,200,83,.3);border-radius:12px;padding:14px;margin:10px 0;text-align:center;";
-  notice.innerHTML=`<div style="font-size:24px;margin-bottom:6px;">🎉</div><div style="font-size:15px;font-weight:800;color:#00E676;margin-bottom:4px;">₦${totalBalance.toLocaleString("en-NG")} Earned!</div><div id="wdSubtext" style="font-size:12px;color:#B0B0B0;margin-bottom:10px;">Watch this to unlock withdrawal.</div><button id="wdActionBtn" onclick="handleWatchClick()" style="background:#00C853;color:#000;border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:800;cursor:pointer;">Watch This to Unlock →</button>`;
-  body.appendChild(notice);body.scrollTop=body.scrollHeight;
-}
-
-const WATCH_URL = "https://omg10.com/4/4105256"; // <-- paste your link here
-
-function handleWatchClick(){
-  const btn = document.getElementById("wdActionBtn");
-  const subtext = document.getElementById("wdSubtext");
-
-  window.open(WATCH_URL, "_blank");
-
-  function onReturn(){
-    if (document.visibilityState === "visible") {
-      unlockWithdraw();
-      document.removeEventListener("visibilitychange", onReturn);
-    }
-  }
-  document.addEventListener("visibilitychange", onReturn);
-
-  btn.textContent = "Waiting for you to return...";
-  btn.disabled = true;
-  btn.style.opacity = "0.6";
-  subtext.textContent = "Come back to this tab once you're done.";
+  notice.innerHTML=<div style="font-size:24px;margin-bottom:6px;">🎉</div><div style="font-size:15px;font-weight:800;color:#00E676;margin-bottom:4px;">₦${totalBalance.toLocaleString("en-NG")} Earned!</div><div style="font-size:12px;color:#B0B0B0;margin-bottom:10px;">Withdrawal available! Withdraw now.</div><button onclick="goScreen('earnings')" style="background:#00C853;color:#000;border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:800;cursor:pointer;">Withdraw Now →</button>;
 }
 
 function unlockWithdraw(){
