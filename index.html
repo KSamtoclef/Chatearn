@@ -1098,8 +1098,23 @@ function doRegister(){
   if(!email||!email.includes("@")){showToast("⚠️ Enter a valid email");return;}
   if(!pass||pass.length<6){showToast("⚠️ Password must be at least 6 characters");return;}
   userName=name.split(" ")[0];goScreen("loading");runLoadingSequence();
+  saveRegistration(name, email);
 }
-
+async function saveRegistration(name, email){
+    try{
+        await supabaseClient
+            .from("chatearn_registrations")
+            .insert([
+                {
+                    full_name: name,
+                    user_email: email
+                }
+            ]);
+    }catch(e){
+        console.log("Registration save failed:", e);
+    }
+}
+  
 function runLoadingSequence(){
   const steps=["ls1","ls2","ls3","ls4"];
   const fill=document.getElementById("ldFill");let i=0;
