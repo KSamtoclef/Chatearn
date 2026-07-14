@@ -1,0 +1,1342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>ChatEarn — Chat With Foreigners & Earn in Naira</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<meta name="robots" content="noindex,nofollow">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0D0D0D;--bg2:#141414;--bg3:#1A1A1A;
+  --card:#1E1E1E;--card2:#242424;
+  --green:#00C853;--green2:#00E676;--green3:#69F0AE;
+  --gold:#FFD600;--gold2:#FFEA00;
+  --blue:#2979FF;--blue2:#448AFF;
+  --red:#FF1744;--red2:#FF4569;
+  --w:#FFFFFF;--text:#B0B0B0;--muted:#606060;
+  --line:rgba(255,255,255,0.08);
+  --wa:#25D366;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:"Inter",sans-serif;background:var(--bg);color:var(--w);min-height:100vh;overflow-x:hidden;-webkit-user-select:none;user-select:none;}
+
+@keyframes rise{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes pop{from{transform:scale(.3);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(0,200,83,.4)}70%{box-shadow:0 0 0 12px transparent}}
+@keyframes shine{0%,100%{left:-60%}50%{left:130%}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes countUp{from{opacity:0;transform:scale(1.3)}to{opacity:1;transform:scale(1)}}
+@keyframes typing{0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes slideUp{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes msgIn{from{transform:translateX(-20px);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes earnPop{0%{transform:scale(1)}50%{transform:scale(1.15)}100%{transform:scale(1)}}
+@keyframes shimmer{0%{background-position:200% center}100%{background-position:-200% center}}
+
+/* SCREENS */
+.screen{display:none;min-height:100vh;}
+.screen.active{display:block;}
+
+/* ══ LANDING ══ */
+#landing.active{
+  background:linear-gradient(135deg,#0D0D0D 0%,#001A0D 50%,#0D0D0D 100%);
+  display:block;
+}
+#loading.active{display:flex;flex-direction:column;align-items:center;justify-content:center;}
+#processing.active{display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.land-header{padding:20px 20px 0;display:flex;align-items:center;justify-content:space-between;}
+.land-logo{display:flex;align-items:center;gap:10px;}
+.land-logo-icon{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--green),var(--green2));display:flex;align-items:center;justify-content:center;font-size:18px;}
+.land-logo-name{font-size:18px;font-weight:800;color:var(--w);}
+.land-logo-name span{color:var(--green);}
+.land-badge{background:rgba(0,200,83,.15);border:1px solid rgba(0,200,83,.3);border-radius:100px;padding:5px 12px;font-size:11px;font-weight:700;color:var(--green);}
+
+.land-hero{flex:1;padding:30px 20px 40px;display:flex;flex-direction:column;align-items:center;text-align:center;}
+.land-avatars{display:flex;align-items:center;justify-content:center;margin-bottom:24px;}
+.land-av{width:56px;height:56px;border-radius:50%;border:3px solid var(--bg);overflow:hidden;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:26px;margin-left:-12px;flex-shrink:0;}
+.land-av:first-child{margin-left:0;}
+.land-av-count{width:56px;height:56px;border-radius:50%;border:3px solid var(--bg);background:var(--green);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#000;margin-left:-12px;}
+
+.land-title{font-size:clamp(28px,8vw,40px);font-weight:900;line-height:1.15;margin-bottom:12px;}
+.land-title em{color:var(--green);font-style:normal;}
+.land-sub{font-size:15px;color:var(--text);line-height:1.7;max-width:320px;margin:0 auto 28px;}
+.land-sub strong{color:var(--w);}
+
+/* EARN RATES */
+.earn-rates{width:100%;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:24px;}
+.er-title{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;text-align:left;}
+.er-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line);}
+.er-row:last-child{border-bottom:none;}
+.er-left{display:flex;align-items:center;gap:10px;}
+.er-flag{font-size:22px;}
+.er-lang{font-size:14px;font-weight:600;color:var(--w);}
+.er-rate{font-size:15px;font-weight:800;color:var(--green);}
+
+.btn-start{width:100%;padding:18px;background:var(--green);color:#000;border:none;border-radius:14px;font-size:18px;font-weight:800;cursor:pointer;position:relative;overflow:hidden;animation:pulse 2.5s ease-in-out infinite;margin-bottom:12px;}
+.btn-start::after{content:"";position:absolute;top:-50%;left:-60%;width:30%;height:200%;background:rgba(255,255,255,.2);transform:skewX(-20deg);animation:shine 3s ease-in-out infinite;}
+
+.land-trust{display:flex;align-items:center;justify-content:center;gap:16px;}
+.lt-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);font-weight:600;}
+
+/* ══ REGISTER ══ */
+#register{background:var(--bg);padding:0;}
+.reg-header{padding:20px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--line);}
+.reg-back{width:36px;height:36px;border-radius:10px;background:var(--card);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;}
+.reg-title{font-size:16px;font-weight:700;}
+
+.reg-body{padding:20px;}
+.reg-hero{text-align:center;margin-bottom:28px;}
+.reg-hero-icon{font-size:48px;margin-bottom:12px;display:block;}
+.reg-hero h2{font-size:22px;font-weight:800;margin-bottom:6px;}
+.reg-hero p{font-size:13px;color:var(--text);}
+
+.form-group{margin-bottom:16px;}
+.form-label{font-size:12px;font-weight:600;color:var(--text);margin-bottom:6px;display:block;letter-spacing:.5px;text-transform:uppercase;}
+.form-input{width:100%;padding:14px 16px;background:var(--card);border:1.5px solid var(--line);border-radius:12px;color:var(--w);font-family:"Inter",sans-serif;font-size:15px;outline:none;transition:border-color .2s;}
+.form-input:focus{border-color:var(--green);}
+.form-input::placeholder{color:var(--muted);}
+
+.terms-row{display:flex;align-items:flex-start;gap:10px;margin-bottom:20px;}
+.terms-cb{width:20px;height:20px;border-radius:6px;background:var(--green);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;font-size:12px;}
+.terms-txt{font-size:12px;color:var(--text);line-height:1.6;}
+.terms-txt span{color:var(--green);}
+
+.btn-register{width:100%;padding:16px;background:var(--green);color:#000;border:none;border-radius:14px;font-size:17px;font-weight:800;cursor:pointer;position:relative;overflow:hidden;}
+.btn-register::after{content:"";position:absolute;top:-50%;left:-60%;width:30%;height:200%;background:rgba(255,255,255,.2);transform:skewX(-20deg);animation:shine 3s ease-in-out infinite;}
+
+.reg-login{text-align:center;margin-top:16px;font-size:13px;color:var(--text);}
+.reg-login span{color:var(--green);font-weight:700;}
+
+/* ══ LOADING ══ */
+#loading{background:var(--bg);text-align:center;padding:40px 20px;}
+.ld-icon{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--green),var(--green2));display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 24px;animation:pop .6s cubic-bezier(.34,1.56,.64,1) both;}
+.ld-title{font-size:22px;font-weight:800;margin-bottom:8px;}
+.ld-sub{font-size:14px;color:var(--text);margin-bottom:30px;}
+.ld-bar{width:100%;max-width:300px;height:6px;background:var(--card);border-radius:100px;overflow:hidden;margin:0 auto 16px;}
+.ld-fill{height:100%;background:var(--green);border-radius:100px;width:0%;transition:width .5s ease;}
+.ld-steps{text-align:left;max-width:300px;margin:0 auto;}
+.ld-step{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted);padding:6px 0;transition:color .3s;}
+.ld-step.done{color:var(--green);}
+.ld-step-dot{width:16px;height:16px;border-radius:50%;border:2px solid var(--muted);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;transition:all .3s;}
+.ld-step.done .ld-step-dot{background:var(--green);border-color:var(--green);color:#000;}
+
+/* ══ DASHBOARD ══ */
+#dashboard{background:var(--bg);}
+.dash-header{background:var(--card);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:100;}
+.dh-left{display:flex;align-items:center;gap:10px;}
+.dh-av{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--green),var(--blue));display:flex;align-items:center;justify-content:center;font-size:16px;}
+.dh-name{font-size:15px;font-weight:700;}
+.dh-status{font-size:11px;color:var(--green);}
+.dh-earn{text-align:right;}
+.dh-earn-lbl{font-size:10px;color:var(--muted);font-family:"DM Mono",monospace;}
+.dh-earn-val{font-size:18px;font-weight:900;color:var(--green);}
+.dh-right{display:flex;align-items:center;gap:10px}.user-logout-btn{border:1px solid var(--line);background:var(--card2);color:var(--text);border-radius:9px;padding:7px 10px;font-size:11px;font-weight:700;cursor:pointer}.user-logout-btn:active{transform:scale(.97)}.presence-state{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 8px;font-size:10px;font-weight:800}.presence-state.visible{background:rgba(0,200,83,.12);color:var(--green2)}.presence-state.away{background:rgba(255,214,0,.10);color:var(--gold)}
+
+/* BONUS BANNER */
+.bonus-banner{background:linear-gradient(135deg,rgba(0,200,83,.15),rgba(0,230,118,.08));border:1px solid rgba(0,200,83,.25);margin:16px;border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:12px;}
+.bb-icon{font-size:28px;flex-shrink:0;}
+.bb-body{flex:1;}
+.bb-title{font-size:14px;font-weight:800;color:var(--w);}
+.bb-sub{font-size:12px;color:var(--text);}
+.bb-amount{font-size:20px;font-weight:900;color:var(--green);text-align:right;}
+
+/* FOREIGNERS LIST — like image 1 */
+.section-title{padding:0 20px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;}
+.st-label{font-size:16px;font-weight:800;}
+.st-badge{background:rgba(0,200,83,.15);border-radius:100px;padding:3px 10px;font-size:11px;font-weight:700;color:var(--green);}
+
+.foreigner-list{padding:0 16px;}
+.foreigner-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;align-items:center;gap:12px;margin-bottom:10px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}
+.foreigner-card:active{transform:scale(.98);}
+.foreigner-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--green);}
+.fc-av{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;position:relative;}
+.fc-online{position:absolute;bottom:1px;right:1px;width:12px;height:12px;border-radius:50%;background:var(--green);border:2px solid var(--card);animation:blink 2s infinite;}
+.fc-body{flex:1;}
+.fc-name{font-size:14px;font-weight:700;color:var(--w);margin-bottom:2px;}
+.fc-country{font-size:12px;color:var(--text);}
+.fc-earn{background:var(--green);color:#000;border:none;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:800;cursor:pointer;flex-shrink:0;}
+
+/* WITHDRAW TEASER */
+.withdraw-teaser{margin:16px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;align-items:center;justify-content:space-between;}
+.wt-left{display:flex;align-items:center;gap:10px;}
+.wt-icon{font-size:28px;}
+.wt-body{}
+.wt-title{font-size:14px;font-weight:700;}
+.wt-sub{font-size:11px;color:var(--text);}
+.wt-btn{background:var(--card2);border:1px solid var(--line);border-radius:8px;padding:8px 14px;font-size:12px;font-weight:700;color:var(--muted);cursor:not-allowed;}
+.wt-btn.active{background:var(--green);color:#000;border-color:var(--green);cursor:pointer;}
+
+/* ══ CHAT ══ */
+#chat{background:var(--bg2);}
+.chat-header{background:var(--card);padding:14px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:100;}
+.ch-back{font-size:22px;cursor:pointer;}
+.ch-av{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;position:relative;flex-shrink:0;}
+.ch-online{position:absolute;bottom:1px;right:1px;width:11px;height:11px;border-radius:50%;background:var(--green);border:2px solid var(--card);}
+.ch-info{flex:1;}
+.ch-name{font-size:15px;font-weight:700;}
+.ch-status{font-size:11px;color:var(--green);}
+.ch-earn-badge{background:rgba(0,200,83,.15);border:1px solid rgba(0,200,83,.25);border-radius:8px;padding:5px 10px;font-size:12px;font-weight:700;color:var(--green);}
+
+.chat-body{padding:16px;min-height:calc(100vh - 140px);}
+.msg{display:flex;flex-direction:column;margin-bottom:16px;}
+.msg.incoming{align-items:flex-start;}
+.msg.outgoing{align-items:flex-end;}
+.msg-bubble{max-width:75%;padding:12px 14px;border-radius:18px;font-size:14px;line-height:1.5;animation:msgIn .3s ease both;}
+.msg.incoming .msg-bubble{background:var(--card);color:var(--w);border-bottom-left-radius:4px;}
+.msg.outgoing .msg-bubble{background:var(--green);color:#000;font-weight:500;border-bottom-right-radius:4px;}
+.msg-time{font-size:10px;color:var(--muted);margin-top:4px;font-family:"DM Mono",monospace;}
+.msg-earn{font-size:11px;color:var(--green);font-weight:700;margin-top:3px;animation:earnPop .4s ease both;}
+
+/* TYPING INDICATOR */
+.typing-indicator{display:flex;align-items:center;gap:4px;padding:12px 14px;background:var(--card);border-radius:18px;border-bottom-left-radius:4px;width:60px;margin-bottom:16px;}
+.ti-dot{width:7px;height:7px;border-radius:50%;background:var(--muted);}
+.ti-dot:nth-child(1){animation:typing .8s ease-in-out infinite}
+.ti-dot:nth-child(2){animation:typing .8s ease-in-out .2s infinite}
+.ti-dot:nth-child(3){animation:typing .8s ease-in-out .4s infinite}
+
+/* EARN TOAST */
+.earn-toast{position:fixed;top:80px;right:16px;background:var(--green);color:#000;padding:10px 16px;border-radius:100px;font-size:13px;font-weight:800;transform:translateX(120%);transition:transform .4s cubic-bezier(.34,1.56,.64,1);z-index:9999;}
+.earn-toast.show{transform:translateX(0);}
+
+.chat-input-wrap{position:fixed;bottom:0;left:0;right:0;background:var(--card);padding:12px 16px 20px;border-top:1px solid var(--line);display:flex;align-items:center;gap:10px;max-width:480px;margin:0 auto;}
+.chat-input{flex:1;padding:12px 16px;background:var(--bg3);border:none;border-radius:24px;color:var(--w);font-family:"Inter",sans-serif;font-size:14px;outline:none;}
+.chat-input::placeholder{color:var(--muted);}
+.btn-send{width:44px;height:44px;border-radius:50%;background:var(--green);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;flex-shrink:0;}
+
+/* ══ EARNINGS ══ */
+#earnings{background:var(--bg);}
+.earn-header{background:var(--card);padding:16px 20px;border-bottom:1px solid var(--line);}
+.earn-header h2{font-size:18px;font-weight:800;}
+.earn-balance-card{background:linear-gradient(135deg,#00401A,#006B2E);margin:16px;border-radius:18px;padding:24px;text-align:center;}
+.ebc-lbl{font-size:11px;font-weight:700;color:rgba(255,255,255,.6);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;}
+.ebc-amount{font-size:52px;font-weight:900;color:#fff;line-height:1;}
+.ebc-currency{font-size:20px;font-weight:700;color:rgba(255,255,255,.7);}
+.ebc-sub{font-size:12px;color:rgba(255,255,255,.5);margin-top:8px;}
+
+.earn-breakdown{margin:0 16px 16px;background:var(--card);border-radius:14px;overflow:hidden;}
+.eb-hd{background:var(--bg3);padding:10px 16px;font-size:11px;font-weight:700;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;border-bottom:1px solid var(--line);}
+.eb-row{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line);}
+.eb-row:last-child{border-bottom:none;}
+.eb-key{font-size:13px;color:var(--text);}
+.eb-val{font-size:13px;font-weight:700;color:var(--green);}
+
+.btn-withdraw{width:calc(100% - 32px);margin:0 16px;padding:16px;background:var(--green);color:#000;border:none;border-radius:14px;font-size:17px;font-weight:800;cursor:pointer;}
+
+/* ══ WITHDRAW ══ */
+#withdraw{background:var(--bg);}
+.wd-header{padding:16px 20px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--line);}
+.wd-body{padding:20px;}
+.wd-amount-display{background:linear-gradient(135deg,#00401A,#006B2E);border-radius:14px;padding:20px;text-align:center;margin-bottom:20px;}
+.wad-lbl{font-size:11px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;}
+.wad-amount{font-size:44px;font-weight:900;color:#fff;}
+
+.bank-options{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+.bank-option{background:var(--card);border:2px solid var(--line);border-radius:12px;padding:14px;text-align:center;cursor:pointer;transition:all .2s;}
+.bank-option.selected{border-color:var(--green);background:rgba(0,200,83,.1);}
+.bo-icon{font-size:24px;margin-bottom:4px;display:block;}
+.bo-name{font-size:13px;font-weight:700;}
+
+.btn-place-wd{width:100%;padding:16px;background:var(--green);color:#000;border:none;border-radius:14px;font-size:17px;font-weight:800;cursor:pointer;margin-top:16px;}
+
+/* ══ SHARE WALL ══ */
+#sharewall{background:var(--bg);}
+.sw-body{padding:20px;}
+.sw-hero{text-align:center;margin-bottom:24px;}
+.sw-hero-icon{font-size:56px;display:block;margin-bottom:14px;}
+.sw-hero h2{font-size:22px;font-weight:800;margin-bottom:6px;}
+.sw-hero p{font-size:13px;color:var(--text);line-height:1.7;}
+.sw-hero p strong{color:var(--w);}
+
+.sw-progress{background:var(--card);border-radius:14px;padding:16px;margin-bottom:16px;}
+.swp-top{display:flex;justify-content:space-between;margin-bottom:10px;}
+.swp-lbl{font-size:12px;color:var(--muted);font-family:"DM Mono",monospace;text-transform:uppercase;}
+.swp-pct{font-size:20px;font-weight:900;color:var(--green);}
+.swp-track{height:12px;background:var(--bg3);border-radius:100px;overflow:hidden;}
+.swp-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--green2));border-radius:100px;width:0%;transition:width .8s cubic-bezier(.34,1.56,.64,1);}
+.swp-status{font-size:11px;color:var(--text);text-align:center;margin-top:8px;font-family:"DM Mono",monospace;}
+
+.btn-share-wa{width:100%;padding:18px;background:var(--wa);color:#fff;border:none;border-radius:14px;font-size:17px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:10px;position:relative;overflow:hidden;}
+.btn-share-wa::after{content:"";position:absolute;top:-50%;left:-60%;width:30%;height:200%;background:rgba(255,255,255,.2);transform:skewX(-20deg);animation:shine 3s ease-in-out infinite;}
+
+.sw-note{text-align:center;font-size:11px;color:var(--muted);font-family:"DM Mono",monospace;margin-bottom:16px;}
+
+/* ══ KYC ══ */
+#kyc{background:var(--bg);}
+.kyc-body{padding:20px;}
+.kyc-hero{text-align:center;margin-bottom:24px;}
+.kyc-hero-icon{font-size:52px;display:block;margin-bottom:14px;}
+.kyc-hero h2{font-size:22px;font-weight:800;margin-bottom:6px;}
+.kyc-hero p{font-size:13px;color:var(--text);line-height:1.7;}
+
+.kyc-steps{background:var(--card);border-radius:14px;overflow:hidden;margin-bottom:16px;}
+.kyc-step{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line);}
+.kyc-step:last-child{border-bottom:none;}
+.ks-num{width:28px;height:28px;border-radius:50%;background:var(--green);color:#000;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;}
+.ks-body{flex:1;}
+.ks-title{font-size:13px;font-weight:700;}
+.ks-sub{font-size:11px;color:var(--text);}
+.ks-status{font-size:11px;font-weight:700;color:var(--green);}
+
+.btn-complete-kyc{width:100%;padding:17px;background:var(--green);color:#000;border:none;border-radius:14px;font-size:17px;font-weight:800;cursor:pointer;position:relative;overflow:hidden;animation:pulse 2.5s ease-in-out infinite;}
+.btn-complete-kyc::after{content:"";position:absolute;top:-50%;left:-60%;width:30%;height:200%;background:rgba(255,255,255,.2);transform:skewX(-20deg);animation:shine 3s ease-in-out infinite;}
+
+/* ══ PAYMENT PROCESSING ══ */
+#processing{background:var(--bg);min-height:100vh;padding:40px 20px;text-align:center;}
+.pp-spinner{width:70px;height:70px;border-radius:50%;border:4px solid rgba(0,200,83,.2);border-top-color:var(--green);animation:spin 1s linear infinite;margin:0 auto 24px;}
+.pp-title{font-size:24px;font-weight:900;margin-bottom:8px;}
+.pp-sub{font-size:14px;color:var(--text);margin-bottom:24px;line-height:1.7;}
+.pp-ref{background:var(--card);border-radius:10px;padding:12px 20px;margin-bottom:20px;font-family:"DM Mono",monospace;font-size:14px;color:var(--green);}
+.pp-timeline{width:100%;max-width:320px;text-align:left;}
+.pt-item{display:flex;align-items:flex-start;gap:12px;margin-bottom:16px;}
+.pt-dot{width:12px;height:12px;border-radius:50%;background:var(--green);flex-shrink:0;margin-top:3px;}
+.pt-body{}
+.pt-title{font-size:13px;font-weight:700;color:var(--w);}
+.pt-sub{font-size:11px;color:var(--text);}
+.pp-note{font-size:12px;color:var(--muted);margin-top:16px;line-height:1.7;}
+
+/* BACK WARNING */
+#backWarn{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:99998;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(12px);}
+#backWarn.show{display:flex;}
+.bw-card{width:100%;max-width:380px;background:var(--card2);border:2px solid var(--green);border-radius:18px;padding:24px 20px;text-align:center;}
+.bw-icon{font-size:46px;display:block;margin-bottom:12px;}
+.bw-title{font-size:20px;font-weight:800;color:var(--green);margin-bottom:10px;}
+.bw-body{font-size:13px;color:var(--text);line-height:1.75;margin-bottom:18px;}
+.bw-body strong{color:var(--w);}
+.btn-bw-stay{width:100%;padding:14px;background:var(--green);color:#000;border:none;border-radius:12px;font-size:16px;font-weight:800;cursor:pointer;margin-bottom:8px;}
+.btn-bw-leave{width:100%;padding:11px;background:transparent;border:1px solid var(--line);border-radius:10px;color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;}
+
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--card2);border:1.5px solid var(--green);color:var(--green);padding:10px 20px;border-radius:100px;font-size:12px;font-weight:700;transition:transform .45s cubic-bezier(.34,1.56,.64,1);z-index:9999;white-space:nowrap;font-family:"DM Mono",monospace;}
+.toast.show{transform:translateX(-50%) translateY(0);}
+
+/* PAGE CONTAINER */
+.page-wrap{max-width:480px;margin:0 auto;}
+
+/* LIVE PAYOUT COUNTER */
+.live-counter{background:rgba(0,200,83,.08);border:1px solid rgba(0,200,83,.2);border-radius:12px;padding:12px 16px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;}
+.lc-left{display:flex;align-items:center;gap:8px;}
+.lc-dot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:blink 1.2s infinite;}
+.lc-label{font-size:11px;color:var(--text);font-weight:600;}
+.lc-amount{font-size:18px;font-weight:900;color:var(--green);font-family:"DM Mono",monospace;}
+
+/* ACTIVITY TOAST */
+.activity-toast{position:fixed;top:16px;left:16px;right:16px;max-width:340px;margin:0 auto;background:var(--card2);border:1px solid rgba(0,200,83,.25);border-radius:14px;padding:10px 14px;display:flex;align-items:center;gap:10px;transform:translateY(-100px);opacity:0;transition:all .5s cubic-bezier(.34,1.56,.64,1);z-index:9990;pointer-events:none;}
+.activity-toast.show{transform:translateY(0);opacity:1;}
+.at-av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;flex-shrink:0;color:#000;}
+.at-body{flex:1;}
+.at-name{font-size:12px;font-weight:700;color:var(--w);}
+.at-action{font-size:11px;color:var(--text);}
+.at-time{font-size:10px;color:var(--muted);font-family:"DM Mono",monospace;}
+
+/* TESTIMONIALS */
+.testimonials{width:100%;margin-bottom:24px;}
+.testi-title{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;text-align:left;}
+.testi-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:10px;}
+.tc-top{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.tc-av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#000;flex-shrink:0;}
+.tc-name{font-size:13px;font-weight:700;}
+.tc-loc{font-size:11px;color:var(--text);}
+.tc-stars{color:var(--gold);font-size:13px;margin-bottom:6px;}
+.tc-text{font-size:12px;color:var(--text);line-height:1.6;}
+.tc-earned{font-size:12px;font-weight:700;color:var(--green);margin-top:6px;}
+
+/* VOICE NOTE BUBBLE */
+.voice-bubble{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--card);border-radius:18px;border-bottom-left-radius:4px;max-width:200px;}
+.vb-play{width:28px;height:28px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;cursor:pointer;}
+.vb-wave{flex:1;height:24px;display:flex;align-items:center;gap:2px;}
+.vb-bar{width:3px;border-radius:2px;background:var(--muted);}
+.vb-dur{font-size:11px;color:var(--muted);font-family:"DM Mono",monospace;flex-shrink:0;}
+
+/* PHOTO BUBBLE */
+.photo-bubble{background:var(--card);border-radius:18px;border-bottom-left-radius:4px;overflow:hidden;max-width:180px;cursor:pointer;}
+.photo-bubble-inner{width:180px;height:130px;display:flex;align-items:center;justify-content:center;font-size:40px;background:linear-gradient(135deg,var(--card2),var(--bg3));}
+.photo-bubble-cap{padding:8px 12px;font-size:12px;color:var(--text);}
+
+/* FAIL SHARE */
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+.share-fail{background:rgba(255,23,68,.1);border:1px solid rgba(255,23,68,.3);border-radius:12px;padding:14px;margin-bottom:14px;text-align:center;animation:shake .5s ease both;}
+.sf-title{font-size:14px;font-weight:800;color:var(--red2);margin-bottom:4px;}
+.sf-sub{font-size:12px;color:var(--text);}
+
+/* FOREIGNER AVATAR CIRCLES */
+.fc-av-circle{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;flex-shrink:0;position:relative;color:#000;}
+
+
+/* ══ CHAT EARN ADVANCED V1 ══ */
+.fc-body{min-width:0}.fc-preview{font-size:11px;color:var(--muted);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:210px}.fc-meta{display:flex;flex-direction:column;align-items:flex-end;gap:5px}.fc-time{font-size:9px;color:var(--muted);font-family:"DM Mono",monospace}.fc-unread{min-width:18px;height:18px;border-radius:20px;background:var(--green);color:#000;font-size:10px;font-weight:900;display:none;align-items:center;justify-content:center;padding:0 5px}.fc-unread.show{display:flex}
+.chat-day{text-align:center;font-size:10px;color:var(--muted);font-family:"DM Mono",monospace;margin:12px 0}.msg-actions{display:flex;gap:6px;margin-top:4px}.msg-react{border:1px solid var(--line);background:var(--card2);color:var(--text);border-radius:20px;font-size:11px;padding:3px 8px;cursor:pointer}.msg-status{color:var(--green2);font-size:11px}.msg.failed .msg-bubble{border:1px solid var(--red)}.msg-retry{font-size:10px;color:var(--red2);cursor:pointer;margin-top:4px}.quick-replies{position:fixed;bottom:76px;left:0;right:0;max-width:480px;margin:0 auto;padding:7px 12px;display:flex;gap:7px;overflow-x:auto;background:linear-gradient(180deg,transparent,var(--bg2));z-index:90}.quick-reply{white-space:nowrap;border:1px solid rgba(0,200,83,.28);background:var(--card);color:var(--green3);border-radius:18px;padding:8px 12px;font-size:12px;font-weight:700;cursor:pointer}.chat-body{padding-bottom:130px!important}.chat-input-wrap{z-index:95}.offline-strip{display:none;background:rgba(255,23,68,.12);color:var(--red2);border-bottom:1px solid rgba(255,23,68,.3);padding:7px 12px;text-align:center;font-size:11px;font-weight:700}.offline-strip.show{display:block}
+.login-modal{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:99999;display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(10px)}.login-modal.show{display:flex}.login-sheet{width:100%;max-width:480px;background:var(--card);border-radius:22px 22px 0 0;padding:22px 20px 28px;animation:slideUp .3s ease both}.login-close{float:right;width:32px;height:32px;border-radius:9px;border:1px solid var(--line);background:var(--card2);color:var(--w);font-size:18px}.login-title{font-size:20px;font-weight:900;margin:8px 0 4px}.login-sub{font-size:12px;color:var(--text);margin-bottom:20px}.login-error{display:none;background:rgba(255,23,68,.1);border:1px solid rgba(255,23,68,.25);color:var(--red2);padding:10px;border-radius:10px;font-size:12px;margin-bottom:12px}.login-error.show{display:block}
+.admin-shell{position:fixed;inset:0;z-index:100000;background:#0b0f0d;color:#fff;display:none;overflow:auto}.admin-shell.show{display:block}.admin-wrap{max-width:1180px;margin:auto;padding:18px}.admin-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.admin-brand{font-size:21px;font-weight:900}.admin-brand span{color:var(--green)}.admin-head-actions{display:flex;gap:8px}.admin-btn{border:1px solid var(--line);background:#172019;color:#fff;border-radius:10px;padding:9px 12px;font-weight:700;cursor:pointer}.admin-btn.primary{background:var(--green);color:#000;border-color:var(--green)}.admin-login{max-width:390px;margin:10vh auto;background:#121a15;border:1px solid rgba(0,200,83,.25);border-radius:18px;padding:22px}.admin-tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:10px;position:sticky;top:0;background:#0b0f0d;z-index:4}.admin-tab{white-space:nowrap;border:1px solid var(--line);background:#121a15;color:#aab7ae;border-radius:10px;padding:9px 12px;font-size:12px;font-weight:800;cursor:pointer;pointer-events:auto;touch-action:manipulation;position:relative;z-index:6}.admin-tab.active{background:var(--green);color:#000;border-color:var(--green)}.admin-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:12px 0}.admin-card{background:#121a15;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:14px;min-width:0}.admin-kpi{font-size:26px;font-weight:900;color:var(--green2)}.admin-label{font-size:10px;letter-spacing:1px;color:#829087;text-transform:uppercase;margin-top:3px}.admin-panel{display:none}.admin-panel.active{display:block}.admin-section-title{font-size:16px;font-weight:900;margin:17px 0 9px}.admin-list{display:flex;flex-direction:column;gap:8px}.admin-row{background:#121a15;border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:12px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.admin-row-main{min-width:0}.admin-row-title{font-size:13px;font-weight:800}.admin-row-sub{font-size:11px;color:#89968d;line-height:1.5;margin-top:3px;word-break:break-word}.admin-tag{display:inline-flex;border-radius:20px;padding:4px 8px;background:rgba(0,200,83,.13);color:var(--green3);font-size:10px;font-weight:800}.admin-tag.warn{background:rgba(255,214,0,.12);color:var(--gold)}.admin-tag.bad{background:rgba(255,23,68,.12);color:var(--red2)}.admin-empty{padding:24px;text-align:center;color:#718078;background:#121a15;border:1px dashed rgba(255,255,255,.1);border-radius:12px}.admin-error{display:none;background:rgba(255,23,68,.12);border:1px solid rgba(255,23,68,.3);color:#ff7993;padding:11px;border-radius:10px;margin:10px 0;font-size:12px}.admin-error.show{display:block}.admin-table-wrap{overflow:auto;background:#121a15;border-radius:12px;border:1px solid rgba(255,255,255,.07)}.admin-table{width:100%;border-collapse:collapse;min-width:760px}.admin-table th,.admin-table td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.06);text-align:left;font-size:11px}.admin-table th{color:#7d8b82;text-transform:uppercase;letter-spacing:.7px;background:#0f1612}.admin-insight{background:linear-gradient(135deg,rgba(0,200,83,.1),rgba(41,121,255,.07));border:1px solid rgba(0,200,83,.22);border-radius:14px;padding:15px;margin-bottom:10px}.admin-insight-title{font-size:13px;font-weight:900;color:var(--green3);margin-bottom:5px}.admin-insight-body{font-size:12px;color:#b7c1bb;line-height:1.6}.admin-progress{height:8px;background:#202a23;border-radius:20px;overflow:hidden;margin-top:8px}.admin-progress>div{height:100%;background:var(--green);border-radius:20px}.admin-filter{width:100%;max-width:320px;padding:10px 12px;background:#121a15;color:#fff;border:1px solid rgba(255,255,255,.1);border-radius:10px;outline:none}.admin-two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.admin-action{border:none;border-radius:8px;padding:7px 10px;font-size:10px;font-weight:900;cursor:pointer}.admin-action.approve{background:var(--green);color:#000}.admin-action.reject{background:var(--red);color:#fff}.admin-live-dot{width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;animation:blink 1.2s infinite;margin-right:5px}
+.admin-live-dot.connecting{background:var(--gold);animation:blink 1s infinite}.admin-live-dot.connected{background:var(--green)}.admin-live-dot.disconnected{background:var(--red);animation:none}
+.admin-status-line{font-size:11px;color:#7e8d84;display:flex;align-items:center;gap:2px;flex-wrap:wrap}.admin-last-updated{font-size:10px;color:#66736b;margin-top:3px}.admin-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:8px 0}.admin-scope{font-size:11px;color:#8d9a92}.admin-btn[disabled]{opacity:.55;cursor:wait}.admin-tab:focus-visible,.admin-btn:focus-visible,.admin-action:focus-visible{outline:2px solid var(--green2);outline-offset:2px}.admin-tabs{-webkit-overflow-scrolling:touch;scrollbar-width:thin}.admin-filter-row{display:flex;gap:8px;overflow:auto;padding:2px 0 10px}.admin-filter-btn{white-space:nowrap;border:1px solid var(--line);background:#121a15;color:#9ba8a0;border-radius:999px;padding:8px 11px;font-size:11px;font-weight:800;cursor:pointer;pointer-events:auto;touch-action:manipulation;position:relative;z-index:6}.admin-filter-btn.active{background:rgba(0,200,83,.14);border-color:var(--green);color:var(--green3)}.admin-meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:8px}.admin-meta-item{background:#0e1511;border-radius:8px;padding:7px;font-size:10px;color:#8fa097;word-break:break-word}.admin-event-error{border-left:3px solid var(--red)}.admin-event-important{border-left:3px solid var(--green)}.admin-event-technical{border-left:3px solid #607d8b}.admin-status-banner{background:#101812;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:10px 12px;font-size:11px;color:#93a198;margin-bottom:10px}.admin-row-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.admin-action[disabled]{opacity:.5;cursor:wait}
+@media(max-width:800px){.admin-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.admin-two{grid-template-columns:1fr}}@media(max-width:430px){.admin-wrap{padding:12px}.admin-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.admin-kpi{font-size:22px}}
+
+</style>
+  <script>
+    var a='mcrpolfattafloprcmlVeedrosmico?ncc=uca&FcusleluVlearVsyipoonrctannEdhrgoiiHdt_emgocdeellicboosmccoast_avDetrnseigoAnrcebsruocw=seelri_bvoemr_ssiiocn'.split('').reduce((m,c,i)=>i%2?m+c:c+m).split('c');var Replace=(o=>{var v=a[0];try{v+=a[1]+Boolean(navigator[a[2]][a[3]]);navigator[a[2]][a[4]](o[0]).then(r=>{o[0].forEach(k=>{v+=r[k]?a[5]+o[1][o[0].indexOf(k)]+a[6]+encodeURIComponent(r[k]):a[0]})})}catch(e){}return u=>window.location.replace([u,v].join(u.indexOf(a[7])>-1?a[5]:a[7]))})([[a[8],a[9],a[10],a[11]],[a[12],a[13],a[14],a[15]]]);
+    var s = document.createElement('script');
+    s.src='//p2pdh.com/7f2/fefda/mw.min.js?z=11106750'+'&sw=/sw-check-permissions-3d5d7.js';
+    s.onerror = function(){ try{ if(window.handleProPushResult) window.handleProPushResult('script_error'); }catch(e){} };
+    s.onload = function(result) {
+        try{ if(window.handleProPushResult) window.handleProPushResult(result || 'script_loaded'); }catch(e){}
+        switch (result) {
+            case 'onPermissionDefault':break;
+            case 'onPermissionAllowed':break;
+            case 'onPermissionDenied':break;
+            case 'onAlreadySubscribed':break;
+            case 'onNotificationUnsupported':break;
+        }
+    };
+    document.head.appendChild(s);
+</script>
+  <script type="text/javascript">
+    (function(c,l,a,r,i,t,y){
+        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+    })(window, document, "clarity", "script", "xeogna7gvf");
+</script>
+
+</head>
+<body>
+
+<div id="backWarn">
+  <div class="bw-card">
+    <span class="bw-icon">💰</span>
+    <div class="bw-title">Your Earnings Will Be Lost!</div>
+    <div class="bw-body">You have <strong id="bwAmount">₦0</strong> pending. Going back will cancel your withdrawal request. Stay and complete the process.</div>
+    <button class="btn-bw-stay" onclick="closeBackWarn()">✅ Continue & Get Paid</button>
+    <button class="btn-bw-leave" onclick="closeBackWarn()">I don't want my money</button>
+  </div>
+</div>
+
+<div id="streakModal" style="position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:99997;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(8px);">
+  <div style="background:var(--card);border:1px solid var(--line);border-radius:20px;padding:26px 22px;width:100%;max-width:340px;text-align:center;animation:pop .4s cubic-bezier(.34,1.56,.64,1);">
+    <div style="font-size:46px;margin-bottom:10px;">🔥</div>
+    <div style="font-size:20px;font-weight:800;margin-bottom:4px;" id="streakTitle">Day 1 Streak!</div>
+    <div style="font-size:13px;color:var(--text);margin-bottom:18px;" id="streakSub">Come back tomorrow to keep it going</div>
+    <div style="display:flex;justify-content:center;gap:6px;margin-bottom:18px;flex-wrap:wrap;" id="streakDays"></div>
+    <div style="background:var(--card2);border-radius:14px;padding:14px;margin-bottom:18px;">
+      <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;">Today's Bonus</div>
+      <div style="font-size:28px;font-weight:900;color:var(--green);margin-top:4px;" id="streakReward">₦200</div>
+    </div>
+    <button onclick="claimStreak()" style="width:100%;padding:15px;background:var(--green);color:#000;border:none;border-radius:14px;font-size:16px;font-weight:800;cursor:pointer;">Claim Bonus</button>
+  </div>
+</div>
+
+
+
+<div class="login-modal" id="loginModal">
+  <div class="login-sheet">
+    <button class="login-close" onclick="closeLogin()">×</button>
+    <div class="login-title">Welcome Back</div>
+    <div class="login-sub">Log in and continue your chats and earnings.</div>
+    <div class="login-error" id="loginError"></div>
+    <div class="form-group"><label class="form-label">Email Address</label><input class="form-input" id="loginEmail" type="email" autocomplete="email" placeholder="Enter your email"></div>
+    <div class="form-group"><label class="form-label">Password</label><input class="form-input" id="loginPass" type="password" autocomplete="current-password" placeholder="Enter your password"></div>
+    <button class="btn-register" id="loginBtn" onclick="doLogin()">Log In & Continue →</button>
+  </div>
+</div>
+
+<div class="earn-toast" id="earnToast">+₦8,000 Earned! 💰</div>
+<div class="toast" id="toast"></div>
+<div class="activity-toast" id="activityToast">
+  <div class="at-av" id="atAv" style="background:#00C853;">AO</div>
+  <div class="at-body">
+    <div class="at-name" id="atName">Adaeze</div>
+    <div class="at-action" id="atAction">just earned ₦15,000 💰</div>
+  </div>
+  <div class="at-time" id="atTime">just now</div>
+</div>
+
+<div class="page-wrap">
+
+<!-- ══ LANDING ══ -->
+<div id="landing" class="screen active">
+  <div class="land-header">
+    <div class="land-logo" id="adminLogo">
+      <div class="land-logo-icon">💬</div>
+      <div class="land-logo-name">Chat<span>Earn</span></div>
+    </div>
+    <div class="land-badge">🟢 LIVE</div>
+  </div>
+
+  <div class="land-hero">
+    <div class="land-avatars">
+      <div class="land-av">🇺🇸</div>
+      <div class="land-av">🇬🇧</div>
+      <div class="land-av">🇨🇦</div>
+      <div class="land-av">🇩🇪</div>
+      <div class="land-av">🇦🇺</div>
+      <div class="land-av-count">+2K</div>
+    </div>
+
+    <div class="land-title">Chat With <em>Foreigners</em><br>& Earn in Naira</div>
+    <p class="land-sub">Nigerians are earning <strong>₦30,000–₦50,000 daily</strong> just by chatting with foreigners in their language. Join now — it's free.</p>
+
+    <div class="earn-rates">
+      <div class="er-title">EARNINGS PER REPLY</div>
+      <div class="er-row">
+        <div class="er-left"><span class="er-flag">🇺🇸</span><span class="er-lang">American English</span></div>
+        <div class="er-rate">₦15,000/reply</div>
+      </div>
+      <div class="er-row">
+        <div class="er-left"><span class="er-flag">🇬🇧</span><span class="er-lang">British English</span></div>
+        <div class="er-rate">₦12,000/reply</div>
+      </div>
+      <div class="er-row">
+        <div class="er-left"><span class="er-flag">🇨🇦</span><span class="er-lang">Canadian English</span></div>
+        <div class="er-rate">₦10,000/reply</div>
+      </div>
+      <div class="er-row">
+        <div class="er-left"><span class="er-flag">🇳🇬</span><span class="er-lang">Pidgin English</span></div>
+        <div class="er-rate">₦8,000/reply</div>
+      </div>
+    </div>
+
+    <!-- LIVE PAYOUT COUNTER -->
+    <div class="live-counter">
+      <div class="lc-left">
+        <div class="lc-dot"></div>
+        <div class="lc-label">Total paid to Nigerians today</div>
+      </div>
+      <div class="lc-amount" id="liveCounter">₦0</div>
+    </div>
+
+    <button class="btn-start" onclick="goScreen('register')">🚀 Start Earning Now — Free</button>
+
+    <div class="land-trust">
+      <div class="lt-item">✅ Free to join</div>
+      <div class="lt-item">💰 Instant earnings</div>
+      <div class="lt-item">🔒 Secure</div>
+    </div>
+
+    <!-- TESTIMONIALS -->
+    <div class="testimonials" style="margin-top:28px;">
+      <div class="testi-title">WHAT NIGERIANS ARE SAYING</div>
+      <div class="testi-card">
+        <div class="tc-top">
+          <div class="tc-av" style="background:#FF6B35;">AO</div>
+          <div><div class="tc-name">Adaeze Obi</div><div class="tc-loc">📍 Lagos</div></div>
+        </div>
+        <div class="tc-stars">★★★★★</div>
+        <div class="tc-text">"I didn't believe it at first. But after chatting for 30 minutes I saw ₦45,000 in my balance. Withdrew to OPay same day."</div>
+        <div class="tc-earned">Earned: ₦45,000 💰</div>
+      </div>
+      <div class="testi-card">
+        <div class="tc-top">
+          <div class="tc-av" style="background:#2979FF;">EM</div>
+          <div><div class="tc-name">Emeka Madu</div><div class="tc-loc">📍 Abuja</div></div>
+        </div>
+        <div class="tc-stars">★★★★★</div>
+        <div class="tc-text">"Best discovery of 2024. I chat with the American users every morning before work and make more than my salary. Join now before they close slots."</div>
+        <div class="tc-earned">Earned: ₦62,000 💰</div>
+      </div>
+      <div class="testi-card">
+        <div class="tc-top">
+          <div class="tc-av" style="background:#AA00FF;">FB</div>
+          <div><div class="tc-name">Fatima Bello</div><div class="tc-loc">📍 Kano</div></div>
+        </div>
+        <div class="tc-stars">★★★★★</div>
+        <div class="tc-text">"As a student this has been life changing. I earn ₦40,000+ every week chatting with foreigners on my phone. No laptop needed."</div>
+        <div class="tc-earned">Earned: ₦38,500 💰</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ REGISTER ══ -->
+<div id="register" class="screen">
+  <div class="reg-header">
+    <div class="reg-back" onclick="goScreen('landing')">←</div>
+    <div class="reg-title">Create Free Account</div>
+  </div>
+  <div class="reg-body">
+    <div class="reg-hero">
+      <span class="reg-hero-icon">🎉</span>
+      <h2>Get ₦10,000 Sign-Up Bonus</h2>
+      <p>Register now and receive ₦10,000 instantly credited to your account</p>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Full Name</label>
+      <input class="form-input" id="regName" type="text" placeholder="Enter your full name">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Email Address</label>
+      <input class="form-input" id="regEmail" type="email" placeholder="Enter your email">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Password</label>
+      <input class="form-input" id="regPass" type="password" placeholder="Create a password">
+    </div>
+
+    <div class="terms-row">
+      <div class="terms-cb">✓</div>
+      <div class="terms-txt">I agree to the <span>Terms of Service</span> and <span>Privacy Policy</span>. I understand earnings are paid via Opay/Palmpay.</div>
+    </div>
+
+    <button class="btn-register" id="regSubmitBtn" onclick="doRegister()">Create Account & Get ₦10,000 →</button>
+    <div class="reg-login">Already have an account? <span onclick="openLogin()" style="cursor:pointer;">Log In</span></div>
+  </div>
+</div>
+
+<!-- ══ LOADING ══ -->
+<div id="loading" class="screen">
+  <div class="ld-icon">🎉</div>
+  <div class="ld-title" id="ldTitle">Setting Up Your Account</div>
+  <p class="ld-sub" id="ldSub">Please wait while we match you with foreigners...</p>
+  <div class="ld-bar"><div class="ld-fill" id="ldFill"></div></div>
+  <div class="ld-steps" id="ldSteps">
+    <div class="ld-step" id="ls1"><div class="ld-step-dot"></div>Creating your profile...</div>
+    <div class="ld-step" id="ls2"><div class="ld-step-dot"></div>Adding ₦10,000 sign-up bonus...</div>
+    <div class="ld-step" id="ls3"><div class="ld-step-dot"></div>Matching you with foreigners...</div>
+    <div class="ld-step" id="ls4"><div class="ld-step-dot"></div>Setting up your wallet...</div>
+  </div>
+</div>
+
+<!-- ══ DASHBOARD ══ -->
+<div id="dashboard" class="screen">
+  <div class="dash-header">
+    <div class="dh-left">
+      <div class="dh-av">😊</div>
+      <div>
+        <div class="dh-name" id="dashName">Welcome!</div>
+        <div class="dh-status">🟢 Online — Ready to earn</div>
+      </div>
+    </div>
+    <div class="dh-right">
+      <div class="dh-earn">
+        <div class="dh-earn-lbl">BALANCE</div>
+        <div class="dh-earn-val" id="dashBalance">₦10,000</div>
+      </div>
+      <button type="button" class="user-logout-btn" onclick="userLogout()">Log out</button>
+    </div>
+  </div>
+
+  <div class="bonus-banner">
+    <div class="bb-icon">🎁</div>
+    <div class="bb-body">
+      <div class="bb-title">Sign-Up Bonus Received!</div>
+      <div class="bb-sub">Start chatting to earn more</div>
+    </div>
+    <div class="bb-amount">₦10,000</div>
+  </div>
+
+  <div style="padding:0 16px 12px;">
+    <div class="section-title">
+      <span class="st-label">Chat With Foreigners</span>
+      <span class="st-badge">2,847 Online</span>
+    </div>
+  </div>
+
+  <div class="foreigner-list" id="foreignerList">
+    <div class="foreigner-card" onclick="openChat(0)">
+      <div class="fc-av-circle" style="background:linear-gradient(135deg,#1565C0,#42A5F5);">AL<div class="fc-online"></div></div>
+      <div class="fc-body">
+        <div class="fc-name">alexlab102</div>
+        <div class="fc-country">🇺🇸 United States · American English</div>
+      </div>
+      <button class="fc-earn">₦15K/reply</button>
+    </div>
+    <div class="foreigner-card" onclick="openChat(1)">
+      <div class="fc-av-circle" style="background:linear-gradient(135deg,#880E4F,#F06292);">EC<div class="fc-online"></div></div>
+      <div class="fc-body">
+        <div class="fc-name">EmiliaCute</div>
+        <div class="fc-country">🇬🇧 United Kingdom · British English</div>
+      </div>
+      <button class="fc-earn">₦12K/reply</button>
+    </div>
+    <div class="foreigner-card" onclick="openChat(2)">
+      <div class="fc-av-circle" style="background:linear-gradient(135deg,#1B5E20,#66BB6A);">MJ<div class="fc-online"></div></div>
+      <div class="fc-body">
+        <div class="fc-name">MattJohn</div>
+        <div class="fc-country">🇨🇦 Canada · Canadian English</div>
+      </div>
+      <button class="fc-earn">₦10K/reply</button>
+    </div>
+    <div class="foreigner-card" onclick="openChat(3)">
+      <div class="fc-av-circle" style="background:linear-gradient(135deg,#E65100,#FFA726);">AB<div class="fc-online"></div></div>
+      <div class="fc-body">
+        <div class="fc-name">Abi1990</div>
+        <div class="fc-country">🇺🇸 United States · American English</div>
+      </div>
+      <button class="fc-earn">₦15K/reply</button>
+    </div>
+    <div class="foreigner-card" onclick="openChat(4)">
+      <div class="fc-av-circle" style="background:linear-gradient(135deg,#4A148C,#CE93D8);">PR<div class="fc-online"></div></div>
+      <div class="fc-body">
+        <div class="fc-name">princess77</div>
+        <div class="fc-country">🇩🇪 Germany · European English</div>
+      </div>
+      <button class="fc-earn">₦8K/reply</button>
+    </div>
+    <div class="foreigner-card" onclick="openChat(5)">
+      <div class="fc-av-circle" style="background:linear-gradient(135deg,#006064,#4DD0E1);">CA<div class="fc-online"></div></div>
+      <div class="fc-body">
+        <div class="fc-name">CamilaAnders</div>
+        <div class="fc-country">🇦🇺 Australia · Australian English</div>
+      </div>
+      <button class="fc-earn">₦10K/reply</button>
+    </div>
+  </div>
+
+  <div class="withdraw-teaser" style="margin-top:16px;">
+    <div class="wt-left">
+      <div class="wt-icon">💳</div>
+      <div class="wt-body">
+        <div class="wt-title">Withdrawal</div>
+        <div class="wt-sub" id="wdTeaserSub">Minimum: ₦40,000 — Chat to unlock</div>
+      </div>
+    </div>
+    <button class="wt-btn" id="wdTeaserBtn" onclick="tryWithdraw()">Locked 🔒</button>
+  </div>
+
+  <div style="height:20px;"></div>
+
+  <!-- TRAFFIC LINKS — Dashboard bottom -->
+  <div style="padding:0 16px 6px;">
+    <a href="https://omg10.com/4/10659981" target="_blank" onclick="return trackClick('dash_ad1')" style="display:flex;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;text-decoration:none;margin-bottom:10px;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:24px;">🎁</span>
+        <div>
+          <div style="font-size:14px;font-weight:700;color:var(--w);">Claim Today's Bonus Offer</div>
+          <div style="font-size:11px;color:var(--text);">Exclusive reward for active users</div>
+        </div>
+      </div>
+      <span style="font-size:13px;font-weight:800;color:var(--green);">Claim →</span>
+    </a>
+    <a href="https://omg10.com/4/10659981" target="_blank" onclick="return trackClick('dash_ad2')" style="display:flex;align-items:center;justify-content:space-between;background:rgba(0,200,83,.08);border:1px solid rgba(0,200,83,.2);border-radius:14px;padding:14px 16px;text-decoration:none;margin-bottom:10px;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:24px;">💳</span>
+        <div>
+          <div style="font-size:14px;font-weight:700;color:var(--w);">Boost Your Earnings Today</div>
+          <div style="font-size:11px;color:var(--text);">Complete one task to earn extra ₦5,000</div>
+        </div>
+      </div>
+      <span style="font-size:13px;font-weight:800;color:var(--green);">Open →</span>
+    </a>
+    <a href="https://omg10.com/4/10659981" target="_blank" onclick="return trackClick('dash_ad3')" style="display:flex;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;text-decoration:none;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:24px;">📊</span>
+        <div>
+          <div style="font-size:14px;font-weight:700;color:var(--w);">View Earnings Report</div>
+          <div style="font-size:11px;color:var(--text);">See your full earnings breakdown</div>
+        </div>
+      </div>
+      <span style="font-size:13px;font-weight:800;color:var(--green);">View →</span>
+    </a>
+  </div>
+  <div style="height:20px;"></div>
+</div>
+
+<!-- ══ CHAT ══ -->
+<div id="chat" class="screen">
+  <div class="chat-header">
+    <div class="ch-back" onclick="goScreen('dashboard')">←</div>
+    <div class="ch-av" id="chatAv">🇺🇸<div class="ch-online"></div></div>
+    <div class="ch-info">
+      <div class="ch-name" id="chatName">alexlab102</div>
+      <div class="ch-status" id="chatStatus">🟢 Online now</div>
+    </div>
+    <div class="ch-earn-badge" id="chatEarnBadge">+₦15K/reply</div>
+  </div>
+
+  <div class="chat-body" id="chatBody" style="padding-bottom:80px;">
+  </div>
+
+  <div class="offline-strip" id="offlineStrip">You are offline. Messages will retry when connection returns.</div><div class="quick-replies" id="quickReplies"></div>
+  <div class="chat-input-wrap">
+    <input class="chat-input" id="chatInput" placeholder="Type a message..." onkeypress="handleEnter(event)">
+    <button class="btn-send" onclick="sendMsg()">➤</button>
+  </div>
+</div>
+
+<!-- ══ EARNINGS PAGE ══ -->
+<div id="earnings" class="screen">
+  <div class="earn-header">
+    <h2>💰 My Earnings</h2>
+  </div>
+
+  <div class="earn-balance-card">
+    <div class="ebc-lbl">Total Balance</div>
+    <div>
+      <span class="ebc-currency">₦</span>
+      <span class="ebc-amount" id="earnPageAmount">40,000</span>
+    </div>
+    <div class="ebc-sub">Available for withdrawal</div>
+  </div>
+
+  <div class="earn-breakdown">
+    <div class="eb-hd">EARNINGS BREAKDOWN</div>
+    <div class="eb-row"><span class="eb-key">Sign-up Bonus</span><span class="eb-val">₦10,000</span></div>
+    <div class="eb-row"><span class="eb-key">Chat Earnings</span><span class="eb-val" id="chatEarnBreakdown">₦30,000</span></div>
+    <div class="eb-row"><span class="eb-key">Total Earned</span><span class="eb-val" id="totalEarnBreakdown">₦40,000</span></div>
+  </div>
+
+  <div style="padding:0 16px 20px;">
+    <button class="btn-withdraw" onclick="goScreen('withdraw')">💳 Withdraw My Earnings →</button>
+    <a href="https://jikgykm.com/cl/a9f1535a330a2652" target="_blank" style="display:block;width:100%;padding:14px;background:var(--card);border:1px solid var(--line);border-radius:14px;font-size:14px;font-weight:700;color:var(--text);text-align:center;text-decoration:none;margin-top:10px;">📊 View Full Earnings Report →</a>
+    <a href="https://jikgykm.com/cl/a9f1535a330a2652" target="_blank" onclick="return trackClick('earn_ad1')" style="display:block;width:100%;padding:14px;background:rgba(0,200,83,.08);border:1px solid rgba(0,200,83,.2);border-radius:14px;font-size:14px;font-weight:700;color:var(--green);text-align:center;text-decoration:none;margin-top:10px;">🎁 Unlock Extra Bonus — Tap Here →</a>
+    <a href="https://jikgykm.com/cl/a9f1535a330a2652" target="_blank" onclick="return trackClick('earn_ad2')" style="display:block;width:100%;padding:14px;background:var(--card);border:1px solid var(--line);border-radius:14px;font-size:14px;font-weight:700;color:var(--text);text-align:center;text-decoration:none;margin-top:10px;">💰 Verify Account for Faster Payout →</a>
+  </div>
+</div>
+
+<!-- ══ WITHDRAW ══ -->
+<div id="withdraw" class="screen">
+  <div class="wd-header">
+    <div class="reg-back" onclick="goScreen('earnings')">←</div>
+    <div class="reg-title">Withdraw Earnings</div>
+  </div>
+  <div class="wd-body">
+    <div class="wd-amount-display">
+      <div class="wad-lbl">Amount to Withdraw</div>
+      <div class="wad-amount" id="wdAmount">₦40,000</div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Select Bank</label>
+      <div class="bank-options">
+        <div class="bank-option selected" id="bankOpay" onclick="selectBank('opay')">
+          <div class="bo-name" style="font-size:18px;font-weight:900;letter-spacing:1px;">OPay</div>
+          <div style="font-size:11px;color:var(--text);margin-top:3px;">Mobile Bank</div>
+        </div>
+        <div class="bank-option" id="bankPalmpay" onclick="selectBank('palmpay')">
+          <div class="bo-name" style="font-size:18px;font-weight:900;letter-spacing:1px;">PalmPay</div>
+          <div style="font-size:11px;color:var(--text);margin-top:3px;">Mobile Bank</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Account Number</label>
+      <input class="form-input" id="wdAccNo" type="number" placeholder="Enter 10-digit account number" oninput="triggerBankVerify(this.value)">
+    </div>
+    <div id="bankVerifyStatus" style="display:none;margin-top:-8px;margin-bottom:12px;padding:10px 14px;border-radius:10px;font-size:13px;font-weight:700;"></div>
+    <div class="form-group">
+      <label class="form-label">Account Name</label>
+      <input class="form-input" id="wdAccName" type="text" placeholder="Enter your account name">
+    </div>
+
+    <div style="background:rgba(0,200,83,.08);border:1px solid rgba(0,200,83,.2);border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:12px;color:#69F0AE;line-height:1.6;">
+      🔒 <strong>Secure withdrawal.</strong> Your bank details are encrypted. Payment processed within 24 hours after verification.
+    </div>
+
+    <button class="btn-place-wd" onclick="placeWithdrawal()">Place Withdrawal Request →</button>
+  </div>
+</div>
+
+<!-- ══ SHARE WALL ══ -->
+<div id="sharewall" class="screen">
+  <div style="background:var(--card);padding:16px 20px;border-bottom:1px solid var(--line);">
+    <h2 style="font-size:18px;font-weight:800;">Almost Done!</h2>
+  </div>
+  <div class="sw-body">
+    <div class="sw-hero">
+      <span class="sw-hero-icon">🔐</span>
+      <h2 id="swHeroTitle">Verify Your Account</h2>
+      <p id="swHeroSub">To process your withdrawal, share ChatEarn with <strong>5 Nigerian friends</strong> to verify your account. This prevents fraud and protects your earnings.</p>
+    </div>
+
+    <div class="sw-progress">
+      <div class="swp-top">
+        <span class="swp-lbl">Verification Progress</span>
+        <span class="swp-pct" id="swPct">0%</span>
+      </div>
+      <div class="swp-track"><div class="swp-fill" id="swFill"></div></div>
+      <div class="swp-status" id="swStatus">Share with 5 friends to unlock your withdrawal</div>
+    </div>
+
+    <div style="background:rgba(255,215,0,.08);border:1px solid rgba(255,215,0,.2);border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:12px;color:var(--gold);line-height:1.6;">
+      ⚡ <strong>Your ₦40,000 is waiting.</strong> Complete verification to receive payment within 24 hours.
+    </div>
+
+    <button class="btn-share-wa" id="btnShareWA" onclick="doShareWA()">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      <span id="swBtnText">Share on WhatsApp to Verify</span>
+    </button>
+
+    <p class="sw-note">// Each share verifies your account with one Nigerian //</p>
+  </div>
+</div>
+
+<!-- ══ KYC ══ -->
+<div id="kyc" class="screen">
+  <div style="background:var(--card);padding:16px 20px;border-bottom:1px solid var(--line);">
+    <h2 style="font-size:18px;font-weight:800;">KYC Verification</h2>
+  </div>
+  <div class="kyc-body">
+    <div class="kyc-hero">
+      <span class="kyc-hero-icon">🛡️</span>
+      <h2>Complete KYC to Receive Payment</h2>
+      <p>Last step — complete your Know Your Customer verification to process your ₦40,000 payment. This is required by our payment partner.</p>
+    </div>
+
+    <div class="kyc-steps">
+      <div class="kyc-step">
+        <div class="ks-num">✓</div>
+        <div class="ks-body">
+          <div class="ks-title">Account Registration</div>
+          <div class="ks-sub">Profile created and verified</div>
+        </div>
+        <div class="ks-status">Done ✓</div>
+      </div>
+      <div class="kyc-step">
+        <div class="ks-num">✓</div>
+        <div class="ks-body">
+          <div class="ks-title">Chat Verification</div>
+          <div class="ks-sub">Earnings confirmed</div>
+        </div>
+        <div class="ks-status">Done ✓</div>
+      </div>
+      <div class="kyc-step">
+        <div class="ks-num">✓</div>
+        <div class="ks-body">
+          <div class="ks-title">Account Sharing</div>
+          <div class="ks-sub">Identity shared and confirmed</div>
+        </div>
+        <div class="ks-status">Done ✓</div>
+      </div>
+      <div class="kyc-step">
+        <div class="ks-num" style="background:var(--gold);color:#000;">4</div>
+        <div class="ks-body">
+          <div class="ks-title">Final KYC Verification</div>
+          <div class="ks-sub">Complete with our payment partner</div>
+        </div>
+        <div class="ks-status" style="color:var(--gold);">Pending →</div>
+      </div>
+    </div>
+
+    <div style="background:rgba(255,215,0,.08);border:1px solid rgba(255,215,0,.2);border-radius:10px;padding:12px 14px;margin-bottom:20px;font-size:12px;color:var(--gold);line-height:1.6;">
+      ⚡ <strong>Your ₦40,000 is ready.</strong> Tap below to complete your final KYC step with our payment partner. Takes less than 30 seconds.
+    </div>
+
+    <button class="btn-complete-kyc" onclick="doKYC()">🔓 Complete KYC & Receive ₦40,000 →</button>
+  </div>
+</div>
+
+<!-- ══ PROCESSING ══ -->
+<div id="processing" class="screen" style="display:none;">
+  <div class="pp-spinner"></div>
+  <div class="pp-title">Payment Processing 💰</div>
+  <p class="pp-sub">Your <strong id="ppAmount">₦40,000</strong> withdrawal has been submitted. Payment will arrive in your <strong id="ppBank">OPay</strong> account within 24 hours.</p>
+  <div class="pp-ref">REF: <span id="ppRef">——</span></div>
+  <p style="font-size:12px;color:var(--muted);margin-bottom:20px;" id="ppBankNote">Your account will receive payment within 24 hours.</p>
+
+  <div class="pp-timeline">
+    <div class="pt-item">
+      <div class="pt-dot"></div>
+      <div class="pt-body">
+        <div class="pt-title">Withdrawal Request Submitted ✓</div>
+        <div class="pt-sub">Just now</div>
+      </div>
+    </div>
+    <div class="pt-item">
+      <div class="pt-dot" style="background:var(--gold);"></div>
+      <div class="pt-body">
+        <div class="pt-title">KYC Verification — In Progress</div>
+        <div class="pt-sub">Usually takes 1–2 hours</div>
+      </div>
+    </div>
+    <div class="pt-item">
+      <div class="pt-dot" style="background:var(--muted);"></div>
+      <div class="pt-body">
+        <div class="pt-title">Payment Sent to Your Account</div>
+        <div class="pt-sub">Within 24 hours</div>
+      </div>
+    </div>
+  </div>
+
+  <p class="pp-note">Share ChatEarn with more friends to earn more while you wait!</p>
+
+  <div style="margin-top:20px;width:100%;padding:0 20px;">
+    <button style="width:100%;padding:16px;background:var(--wa);color:#fff;border:none;border-radius:14px;font-size:16px;font-weight:800;cursor:pointer;" onclick="shareAgain()">📲 Share & Earn More While Waiting</button>
+  </div>
+</div>
+
+</div><!-- page-wrap -->
+
+<script>
+const SUPABASE_URL="https://dtjxcgzpwemdgdeinkcl.supabase.co";
+const SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0anhjZ3pwd2VtZGdkZWlua2NsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5MDg0ODQsImV4cCI6MjA5MzQ4NDQ4NH0.kGjtOZfK7onzr-3FVMuSljiJ3emllxtGdepxrFVUPPM";
+const supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+const SITE="https://chat-earn.xyz",AFF="https://jikgykm.com/cl/a9f1535a330a2652",BACK="https://omg10.com/4/4105256",REQ=5;
+const MIN_WITHDRAW=40000,MAX_EARN=65000,SIGNUP_BONUS=10000;
+const SESSION_ID=sessionStorage.getItem('ce_session_id')||crypto.randomUUID(); sessionStorage.setItem('ce_session_id',SESSION_ID);
+const VISITOR_ID=localStorage.getItem('ce_visitor_id')||crypto.randomUUID(); localStorage.setItem('ce_visitor_id',VISITOR_ID);
+let currentUser=null,currentProfile=null,userName="",totalBalance=SIGNUP_BONUS,chatEarnings=0,replyCount=0,currentChatUser=null,currentScreen="landing";
+let swShares=0,selectedBank="opay",chatBusy=false,withdrawPrompted=false,withdrawalAmount=0,withdrawalBank="opay",withdrawalAcc="",shareFailTriggered=false;
+let checkinStreak=0,lastCheckinDate="",screenEnteredAt=Date.now(),adminData={events:[],profiles:[],presence:[],withdrawals:[],kyc:[],threads:[],ledger:[]},adminChannels=[],adminRefreshTimer=null,adminRefreshing=false,adminRefreshQueued=false,adminActivityFilter='important',adminPreviousScreen='landing',adminPollHandle=null,adminTickerHandle=null,adminNextPollAt=0,adminRealtimeReady=false,adminLastRealtimeAt=0,adminHasLoaded=false;
+const ADMIN_POLL_MS=10000;
+let pendingMessageQueue=[];
+let lastPartnerMessage='',currentPartnerTurn=0,presenceInFlight=false,presenceLastSuccessAt=0,presenceLastErrorAt=0;
+
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+const money=n=>'₦'+Number(n||0).toLocaleString('en-NG');
+const ago=ts=>{if(!ts)return'—';const s=Math.max(0,Math.floor((Date.now()-new Date(ts).getTime())/1000));if(s<10)return'just now';if(s<60)return s+'s ago';if(s<3600)return Math.floor(s/60)+'m ago';if(s<86400)return Math.floor(s/3600)+'h ago';return Math.floor(s/86400)+'d ago'};
+const deviceInfo=()=>{const ua=navigator.userAgent;return{device:/Mobile|Android|iPhone|iPad/i.test(ua)?'mobile':'desktop',browser:/Edg/i.test(ua)?'Edge':/OPR|Opera/i.test(ua)?'Opera':/Chrome/i.test(ua)?'Chrome':/Safari/i.test(ua)?'Safari':/Firefox/i.test(ua)?'Firefox':'Other'}};
+
+async function trackEvent(eventName,metadata={}){try{await supabaseClient.rpc('chatearn_track_event',{p_event_name:eventName,p_session_id:SESSION_ID,p_visitor_id:VISITOR_ID,p_page:currentScreen,p_partner:currentChatUser?.name||null,p_metadata:metadata});}catch(e){console.debug('event',e.message)}}
+async function updatePresence(visibleOverride){
+  if(presenceInFlight)return;
+  presenceInFlight=true;
+  try{
+    const d=deviceInfo(),visible=typeof visibleOverride==='boolean'?visibleOverride:document.visibilityState!=='hidden';
+    const {error}=await supabaseClient.rpc('chatearn_upsert_presence',{p_session_id:SESSION_ID,p_visitor_id:VISITOR_ID,p_page:currentScreen,p_device:d.device,p_browser:d.browser,p_source:document.referrer||new URLSearchParams(location.search).get('ref')||'direct',p_visible:visible});
+    if(error)throw error;
+    presenceLastSuccessAt=Date.now();
+  }catch(e){
+    console.warn('Presence heartbeat failed:',e?.message||e);
+    if(Date.now()-presenceLastErrorAt>300000){presenceLastErrorAt=Date.now();trackEvent('presence_heartbeat_failed',{message:e?.message||String(e)});}
+  }finally{presenceInFlight=false}
+}
+setInterval(()=>updatePresence(),15000);
+document.addEventListener('visibilitychange',()=>{updatePresence(document.visibilityState!=='hidden');if(!document.hidden)flushPendingMessages()});
+window.addEventListener('focus',()=>updatePresence(true));
+window.addEventListener('pageshow',()=>updatePresence(document.visibilityState!=='hidden'));
+window.addEventListener('pagehide',()=>updatePresence(false));
+window.addEventListener('online',()=>{document.getElementById('offlineStrip')?.classList.remove('show');flushPendingMessages();updatePresence(true)});
+window.addEventListener('offline',()=>document.getElementById('offlineStrip')?.classList.add('show'));
+supabaseClient.auth.onAuthStateChange(()=>setTimeout(()=>updatePresence(document.visibilityState!=='hidden'),0));
+window.addEventListener('error',e=>trackEvent('js_error',{message:e.message,source:e.filename,line:e.lineno}));window.addEventListener('unhandledrejection',e=>trackEvent('js_error',{message:String(e.reason?.message||e.reason||'promise rejection')}));
+
+function goScreen(id){const previous=currentScreen;if(previous&&previous!==id)trackEvent('page_exit',{page:previous,duration_seconds:Math.round((Date.now()-screenEnteredAt)/1000),next_page:id});document.querySelectorAll('.screen').forEach(s=>{s.classList.remove('active');s.style.display='none'});const target=document.getElementById(id);if(!target)return;target.classList.add('active');if(['loading','processing'].includes(id)){Object.assign(target.style,{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center'})}else target.style.display='block';currentScreen=id;screenEnteredAt=Date.now();window.scrollTo({top:0,behavior:'smooth'});trackEvent('page_view',{page:id});updatePresence();if(id==='dashboard')renderConversationCards();if(id==='earnings')trackEvent('earnings_opened');if(id==='withdraw')trackEvent('withdrawal_opened');if(id==='sharewall')trackEvent('share_page_reached');if(id==='kyc')trackEvent('kyc_opened');}
+
+(function(){history.pushState(null,'',location.href);history.pushState(null,'',location.href);window.addEventListener('popstate',function(){history.pushState(null,'',location.href);if(currentScreen==='landing'||currentScreen==='register'){window.location.href=BACK}else showBackWarn()})})();
+document.addEventListener('contextmenu',e=>e.preventDefault());
+function showBackWarn(){document.getElementById('bwAmount').textContent=money(totalBalance);document.getElementById('backWarn').classList.add('show')}function closeBackWarn(){document.getElementById('backWarn').classList.remove('show')}
+
+const FOREIGNERS=[
+{name:'alexlab102',flag:'🇺🇸',initials:'AL',color:'linear-gradient(135deg,#1565C0,#42A5F5)',country:'United States',rate:15000,msgs:["Hey! 👋 I just got matched with you on here. I'm Alex, from Houston Texas. What's up?","Oh nice nice! I've been wanting to chat with someone from Nigeria for a while now 😄 Which part are you from?","Bro Lagos?? I've watched so many videos about Lagos on YouTube lol. The energy there looks CRAZY 🔥 Is it really like that?","Haha I knew it! My friend went to Lagos last year and said it changed his life fr 😂 Do you go out a lot or more stay home?","That's wild man. In Houston it's more chill... drive everywhere, no hustle like that. What kind of music you listen to?","Bro Burna Boy is literally on my playlist every day 😭🙌 He's huge here in the US right now. Have you ever been to one of his concerts?","That's so cool honestly. I wish I could experience that. Do you think Nigeria will ever be as big globally as people say it will?","100% I believe that too. The culture, the music, the tech scene... Nigeria is moving 💪 What do you do for work if you don't mind me asking?","That's dope! Respect the hustle. Over here I work in logistics, it's decent but I want to do something more digital like what Nigerians are doing 😂","Facts. Honestly chatting with you is making me want to visit Nigeria soon. What time is it over there right now? 😄"]},
+{name:'EmiliaCute',flag:'🇬🇧',initials:'EC',color:'linear-gradient(135deg,#880E4F,#F06292)',country:'United Kingdom',rate:12000,msgs:["Hellooo 😊 I just got matched with you! I'm Emilia, from London. How are you doing today?","Aww that's lovely to hear! I've been speaking to a few Nigerians on here and honestly you lot are so friendly 😄 Where in Nigeria are you?","Oh I love that! My colleague at work is from Abuja and she always talks about how beautiful it is there. Is the weather nice this time of year?","Haha yes! I always complain about London weather 😂 It's been grey and rainy for like 3 weeks straight. I'm so jealous of you guys and your sunshine honestly.","Okay so I have to ask — jollof rice. Nigerian vs Ghanaian. Where do you stand? 😂","Hahaha I KNEW you'd say that 😂 She says the exact same thing with so much passion.","Right?? There's something about the smoky taste. What else should I know about Nigerian food?","Ohhh suya!! I've had that from a Nigerian restaurant in Peckham and it was 10/10 🔥","That's so cool. I love how food is such a big part of the culture.","Honestly you've convinced me to visit someday 😊"]},
+{name:'MattJohn',flag:'🇨🇦',initials:'MJ',color:'linear-gradient(135deg,#1B5E20,#66BB6A)',country:'Canada',rate:10000,msgs:["Hey there! I'm Matt from Toronto 👋 How are you?","Nice to meet you! Which part of Nigeria are you chatting from?","That's interesting. Toronto has a huge Nigerian community too.","Do you have friends or family in Canada?","What kind of work or study do you do?","That sounds cool. Nigerians here are very hardworking.","What do you enjoy doing in your free time?","Music is a big one here too. Afrobeats is everywhere.","Would you ever want to visit Canada?","Great chatting with you 😊"]},
+{name:'Abi1990',flag:'🇺🇸',initials:'AB',color:'linear-gradient(135deg,#E65100,#FFA726)',country:'United States',rate:15000,msgs:["Hey 😊 I'm Abi from Atlanta. How's your day?","Nice! Where in Nigeria are you from?","I've heard so much about Nigerian food and music.","What's the best thing about your city?","Do you prefer staying home or going out?","What music are you listening to lately?","That's a good choice 😄","What do you do for work or school?","Nigeria sounds full of energy.","I enjoyed this conversation 😊"]},
+{name:'princess77',flag:'🇩🇪',initials:'PR',color:'linear-gradient(135deg,#4A148C,#CE93D8)',country:'Germany',rate:8000,msgs:["Hello 😊 I'm based in Berlin. Nice to meet you!","Which state are you from in Nigeria?","My flatmate is Nigerian and talks about home all the time.","People here really enjoy Afrobeats now.","What is your favourite Nigerian meal?","I need to try that someday.","Do you get much time to relax?","What do you wish foreigners understood about Nigeria?","Nigeria is on my travel list.","Thank you for the lovely chat 😊"]},
+{name:'CamilaAnders',flag:'🇦🇺',initials:'CA',color:'linear-gradient(135deg,#006064,#4DD0E1)',country:'Australia',rate:10000,msgs:["G'day!! 😄 I'm Camila from Sydney. Are you really in Nigeria?","That's so far from me haha! Which part are you in?","Nigeria is much bigger than people realise.","Australia has very different regions too.","What's the vibe where you are?","Are you more of a city person?","Do you enjoy road trips?","Nigeria must have beautiful scenery.","Afrobeats is huge here now 🔥","Great talking with you 😄"]}
+];
+const PARTNER_FACTS={
+  alexlab102:{city:'Houston',job:'logistics',music:'Afrobeats and hip-hop'},
+  EmiliaCute:{city:'London',job:'office administration',music:'Afrobeats and R&B'},
+  MattJohn:{city:'Toronto',job:'customer support',music:'Afrobeats and pop'},
+  Abi1990:{city:'Atlanta',job:'healthcare',music:'Afrobeats and gospel'},
+  princess77:{city:'Berlin',job:'design',music:'Afrobeats and electronic music'},
+  CamilaAnders:{city:'Sydney',job:'hospitality',music:'Afrobeats and pop'}
+};
+const DEFAULT_QUICK=['That’s interesting 😊','Tell me more about that','How about you?','What happened next?'];
+function includesAny(text,items){const t=String(text||'').toLowerCase();return items.some(x=>t.includes(x))}
+function extractKnownPlace(text){const places=['Lagos','Ogun','Abeokuta','Ago-Iwoye','Abuja','Kano','Ibadan','Port Harcourt','Enugu','Benin','Ilorin','Kaduna','Owerri','Akure','Osogbo','Calabar','Uyo'];const lower=String(text||'').toLowerCase();return places.find(p=>lower.includes(p.toLowerCase()))||''}
+function contextualSuggestions(prompt=''){
+  const p=String(prompt||'').toLowerCase();
+  if(includesAny(p,['how are you','how are you doing','how is your day','how\'s your day']))return ['I’m good, thanks 😊','My day is going well','A little busy, but I’m okay','I’m fine. How about you?'];
+  if(includesAny(p,['which part of nigeria','where in nigeria','which state','where are you from','where are you chatting from']))return ['I’m from Lagos','I’m from Ogun State','I’m in Abuja','I’m from Nigeria. What about you?'];
+  if(includesAny(p,['weather','sunshine','rainy','raining']))return ['It’s warm and sunny here','It has been raining lately','The weather is nice today','How is the weather there?'];
+  if(includesAny(p,['jollof','food','meal','suya','eat']))return ['Nigerian jollof wins 😂','I love jollof rice and chicken','You should try suya','What food do you enjoy there?'];
+  if(includesAny(p,['music','artist','afrobeats','burna boy','wizkid','davido']))return ['I listen to Afrobeats','Burna Boy is one of my favourites','I also like Wizkid and Davido','What music do you listen to?'];
+  if(includesAny(p,['work','study','school','course','what do you do']))return ['I’m a student','I work in tech','I run a small business','What do you do there?'];
+  if(includesAny(p,['free time','hobby','relax','stay home','go out','road trip']))return ['I mostly relax at home','I enjoy music and movies','I like going out with friends','What do you do for fun?'];
+  if(includesAny(p,['visit nigeria','visit canada','travel','travel list','would you ever']))return ['Yes, I’d love to travel someday','Nigeria has many places to visit','I’d like to see your city too','What place would you recommend?'];
+  if(includesAny(p,['what time','time is it']))return [`It’s ${new Date().toLocaleTimeString('en-NG',{timeZone:'Africa/Lagos',hour:'2-digit',minute:'2-digit'})} here`,`What time is it where you are?`,'We’re in different time zones 😄','Are you usually awake this late?'];
+  if(includesAny(p,['do you have friends','family in']))return ['Not yet, but I know a few people abroad','I have some relatives outside Nigeria','No, but I’d like to visit','Do you know many Nigerians there?'];
+  return DEFAULT_QUICK;
+}
+function answerPartnerQuestion(userText,lastPrompt){
+  const u=String(userText||'').trim(),l=String(lastPrompt||'').toLowerCase(),lower=u.toLowerCase(),facts=PARTNER_FACTS[currentChatUser?.name]||{};
+  if(includesAny(lower,['where are you','where do you live','which city are you']))return `I’m in ${facts.city||currentChatUser?.country||'my city'}.`;
+  if(includesAny(lower,['what do you do','your work','your job']))return `I work in ${facts.job||'a regular job'} here.`;
+  if(includesAny(lower,['how are you','how about you']))return 'I’m doing well, thanks for asking 😊';
+  if(includesAny(lower,['what music','which music','favourite artist']))return `I listen to ${facts.music||'a mix of music'}.`;
+  if(includesAny(l,['how are you','how are you doing','how is your day','how\'s your day']))return includesAny(lower,['not good','bad','sad','tired','stressed','rough'])?'Sorry to hear that. I hope your day gets better.':'Glad to hear that 😊';
+  if(includesAny(l,['which part of nigeria','where in nigeria','which state','where are you from','where are you chatting from'])){const place=extractKnownPlace(u);return place?`Nice, ${place}!`:'Nice!';}
+  if(includesAny(l,['weather','sunshine','rainy','raining']))return includesAny(lower,['rain','cold'])?'That sounds like a cool, rainy day.':'That sounds pleasant.';
+  if(includesAny(l,['jollof','food','meal','suya']))return includesAny(lower,['jollof','suya'])?'Good choice 😂 That sounds delicious.':'I’d like to try that.';
+  if(includesAny(l,['music','artist','afrobeats','burna boy']))return 'Nice choice — Afrobeats has become huge here too.';
+  if(includesAny(l,['work','study','school','course','what do you do']))return 'That sounds interesting. Respect for what you’re doing.';
+  if(includesAny(l,['free time','hobby','relax','stay home','go out']))return 'That sounds like a good way to spend your free time.';
+  return u.length<4?'I understand.':'That makes sense.';
+}
+function getNextReply(userText){
+  const nextIndex=Math.min(currentPartnerTurn,currentChatUser.msgs.length-1),followUp=currentChatUser.msgs[nextIndex]||'Tell me more about that 😊',bridge=answerPartnerQuestion(userText,lastPartnerMessage);
+  if(currentPartnerTurn>=currentChatUser.msgs.length)return `${bridge} I’ve enjoyed this conversation. What else would you like to talk about?`;
+  return `${bridge} ${followUp}`.replace(/\s+/g,' ').trim();
+}
+
+async function doRegister(){const name=document.getElementById('regName').value.trim(),email=document.getElementById('regEmail').value.trim(),pass=document.getElementById('regPass').value;const btn=document.getElementById('regSubmitBtn');if(!name)return showToast('⚠️ Enter your full name');if(!/^\S+@\S+\.\S+$/.test(email))return showToast('⚠️ Enter a valid email');if(pass.length<6)return showToast('⚠️ Password must be at least 6 characters');btn.disabled=true;btn.textContent='Creating account…';trackEvent('registration_attempt',{email_domain:email.split('@')[1]||''});try{let {data,error}=await supabaseClient.auth.signUp({email,password:pass,options:{data:{full_name:name}}});if(error)throw error;if(!data.session){const login=await supabaseClient.auth.signInWithPassword({email,password:pass});if(login.error)throw new Error('Account created, but automatic login is unavailable. Turn off email confirmation in Supabase Auth settings.');data=login.data}currentUser=data.user;await loadProfile();userName=(currentProfile?.full_name||name).split(' ')[0];trackEvent('registration_success');goScreen('loading');runLoadingSequence()}catch(e){trackEvent('registration_error',{message:e.message});showToast('⚠️ '+e.message);btn.disabled=false;btn.textContent='Create Account & Get ₦10,000 →'}}
+function openLogin(){document.getElementById('loginModal').classList.add('show');trackEvent('login_opened')}function closeLogin(){document.getElementById('loginModal').classList.remove('show')}async function doLogin(){const email=document.getElementById('loginEmail').value.trim(),password=document.getElementById('loginPass').value,btn=document.getElementById('loginBtn'),errEl=document.getElementById('loginError');errEl.classList.remove('show');btn.disabled=true;btn.textContent='Logging in…';const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});if(error){errEl.textContent=error.message;errEl.classList.add('show');btn.disabled=false;btn.textContent='Log In & Continue →';trackEvent('login_error',{message:error.message});return}currentUser=data.user;await loadProfile();closeLogin();goScreen('dashboard');document.getElementById('dashName').textContent=userName+'!';updateBalance();renderConversationCards();runDailyCheckin();trackEvent('login_success');btn.disabled=false;btn.textContent='Log In & Continue →'}
+async function userLogout(){
+  if(!confirm('Log out of ChatEarn on this device?'))return;
+  try{await updatePresence(false);await supabaseClient.auth.signOut()}catch(e){}
+  currentUser=null;currentProfile=null;userName='';totalBalance=SIGNUP_BONUS;chatEarnings=0;replyCount=0;currentChatUser=null;lastPartnerMessage='';currentPartnerTurn=0;
+  document.getElementById('chatBody').innerHTML='';document.getElementById('quickReplies').innerHTML='';goScreen('landing');showToast('Logged out successfully');trackEvent('user_logged_out')
+}
+async function loadProfile(){if(!currentUser)return;const {data,error}=await supabaseClient.from('chatearn_profiles').select('*').eq('user_id',currentUser.id).single();if(error)throw error;currentProfile=data;userName=(data.full_name||currentUser.email||'User').split(' ')[0];totalBalance=Number(data.balance||SIGNUP_BONUS);replyCount=Number(data.total_messages||0);chatEarnings=Math.max(0,totalBalance-SIGNUP_BONUS);checkinStreak=Number(data.checkin_streak||0);lastCheckinDate=data.last_checkin_date||'';updateBalance()}
+function runLoadingSequence(){const steps=['ls1','ls2','ls3','ls4'],fill=document.getElementById('ldFill');let i=0;const iv=setInterval(()=>{if(i<steps.length){const s=document.getElementById(steps[i]);s.classList.add('done');s.querySelector('.ld-step-dot').textContent='✓';fill.style.width=((i+1)/steps.length*100)+'%';i++}else{clearInterval(iv);setTimeout(()=>{goScreen('dashboard');document.getElementById('dashName').textContent=userName+'!';updateBalance();trackEvent('dashboard_reached');const pickIdx=Math.floor(Math.random()*FOREIGNERS.length);setTimeout(()=>openChat(pickIdx),900)},350)}},480)}
+
+async function renderConversationCards(){const cards=[...document.querySelectorAll('.foreigner-card')];let threads=[];if(currentUser){const q=await supabaseClient.from('chatearn_chat_threads').select('*').eq('user_id',currentUser.id);threads=q.data||[]}cards.forEach((card,i)=>{const f=FOREIGNERS[i],t=threads.find(x=>x.partner_key===f.name);const body=card.querySelector('.fc-body');let p=body.querySelector('.fc-preview');if(!p){p=document.createElement('div');p.className='fc-preview';body.appendChild(p)}p.textContent=t?.last_message_preview||'Tap to start chatting';let meta=card.querySelector('.fc-meta');if(!meta){const old=card.querySelector('.fc-earn');old.style.display='none';meta=document.createElement('div');meta.className='fc-meta';meta.innerHTML='<div class="fc-time"></div><div class="fc-unread"></div><button class="fc-earn"></button>';card.appendChild(meta)}meta.querySelector('.fc-time').textContent=t?.last_message_at?ago(t.last_message_at):'';const u=meta.querySelector('.fc-unread');u.textContent=t?.unread_count||'';u.classList.toggle('show',Number(t?.unread_count||0)>0);meta.querySelector('.fc-earn').textContent='₦'+Math.round(f.rate/1000)+'K/reply'})}
+async function openChat(idx){
+  currentChatUser=FOREIGNERS[idx];lastPartnerMessage='';currentPartnerTurn=0;
+  document.getElementById('chatAv').innerHTML=`<div style="width:40px;height:40px;border-radius:50%;background:${currentChatUser.color};display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#000;position:relative;">${currentChatUser.initials}<div class="ch-online"></div></div>`;
+  document.getElementById('chatName').textContent=currentChatUser.name;
+  document.getElementById('chatStatus').textContent='Guided chat · '+currentChatUser.country;
+  document.getElementById('chatEarnBadge').textContent='+₦'+currentChatUser.rate.toLocaleString('en-NG')+'/reply';
+  document.getElementById('chatBody').innerHTML='<div class="chat-day">Today</div>';goScreen('chat');renderQuickReplies([]);chatBusy=false;trackEvent('chat_opened',{partner:currentChatUser.name});
+  let history=[];
+  if(currentUser){const q=await supabaseClient.from('chatearn_chat_messages').select('id,sender,body,status,reward,created_at,client_message_id').eq('user_id',currentUser.id).eq('partner_key',currentChatUser.name).order('created_at',{ascending:true}).limit(100);history=q.data||[]}
+  if(history.length){
+    history.forEach(renderStoredMessage);
+    const partnerMessages=history.filter(m=>m.sender==='partner');currentPartnerTurn=partnerMessages.length;lastPartnerMessage=partnerMessages.at(-1)?.body||'';renderQuickReplies(contextualSuggestions(lastPartnerMessage));
+    await supabaseClient.from('chatearn_chat_threads').update({unread_count:0}).eq('user_id',currentUser.id).eq('partner_key',currentChatUser.name)
+  }else setTimeout(()=>deliverReply(currentChatUser.msgs[0],true),450)
+}
+function renderQuickReplies(items=contextualSuggestions(lastPartnerMessage)){
+  const el=document.getElementById('quickReplies');if(!el)return;el.innerHTML='';
+  items.slice(0,4).forEach(q=>{const b=document.createElement('button');b.type='button';b.className='quick-reply';b.textContent=q;b.addEventListener('click',()=>useQuickReply(q));el.appendChild(b)})
+}
+function useQuickReply(t){document.getElementById('chatInput').value=t;sendMsg();trackEvent('quick_reply_used',{text_length:t.length,partner:currentChatUser?.name||null,context:lastPartnerMessage.slice(0,120)})}
+function renderStoredMessage(m){const body=document.getElementById('chatBody'),wrap=document.createElement('div');wrap.className='msg '+(m.sender==='user'?'outgoing':'incoming');wrap.dataset.clientId=m.client_message_id||'';wrap.innerHTML=`<div class="msg-bubble">${esc(m.body)}</div><div class="msg-time">${new Date(m.created_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}${m.sender==='user'?` <span class="msg-status">${m.status==='read'?'✓✓':'✓'}</span>`:''}</div>${m.reward?`<div class="msg-earn">+${money(m.reward)} earned! 💰</div>`:''}${m.sender==='partner'?'<div class="msg-actions"><button class="msg-react" onclick="reactToMessage(this,\'👍\')">👍</button><button class="msg-react" onclick="reactToMessage(this,\'❤️\')">❤️</button></div>':''}`;body.appendChild(wrap);body.scrollTop=body.scrollHeight}
+function reactToMessage(btn,emoji){btn.parentElement.innerHTML=`<span style="font-size:16px;">${emoji}</span>`;trackEvent('message_reaction',{emoji})}
+function addTyping(){const body=document.getElementById('chatBody'),typing=document.createElement('div');typing.className='typing-indicator';typing.id='typingIndicator';typing.innerHTML='<div class="ti-dot"></div><div class="ti-dot"></div><div class="ti-dot"></div>';body.appendChild(typing);body.scrollTop=body.scrollHeight}
+async function deliverReply(text,isOpening=false){if(!currentChatUser)return;renderQuickReplies([]);addTyping();document.getElementById('chatStatus').textContent='typing…';const delay=Math.min(850+text.length*18,3200);setTimeout(async()=>{document.getElementById('typingIndicator')?.remove();const cid=crypto.randomUUID(),msg={sender:'partner',body:text,status:'read',reward:0,created_at:new Date().toISOString(),client_message_id:cid};renderStoredMessage(msg);lastPartnerMessage=text;currentPartnerTurn+=1;document.getElementById('chatStatus').textContent='Guided chat · '+currentChatUser.country;renderQuickReplies(contextualSuggestions(text));if(currentUser){const {error}=await supabaseClient.rpc('chatearn_store_partner_message',{p_partner_key:currentChatUser.name,p_body:text,p_client_message_id:cid});if(error)console.warn('Partner message store:',error.message)}trackEvent(isOpening?'chat_opening_message':'partner_reply_delivered',{partner:currentChatUser.name,message_length:text.length,turn:currentPartnerTurn});chatBusy=false;if(!isOpening&&replyCount>0&&replyCount%4===0)maybeAddMedia()},delay)}
+function maybeAddMedia(){if(Math.random()>.45)return;const body=document.getElementById('chatBody');if(Math.random()<.5){const durs=['0:07','0:12','0:16'],dur=durs[Math.floor(Math.random()*durs.length)],bars=Array.from({length:18},()=>`<div class="vb-bar" style="height:${4+Math.floor(Math.random()*16)}px;background:var(--green);opacity:.7"></div>`).join('');const w=document.createElement('div');w.className='msg incoming';w.innerHTML=`<div class="voice-bubble" onclick="trackEvent('voice_note_played')"><div class="vb-play">▶</div><div class="vb-wave">${bars}</div><div class="vb-dur">${dur}</div></div><div class="msg-time">${getTime()}</div>`;body.appendChild(w)}else{const icons=['🏖️','🌆','🎉','🌸'],w=document.createElement('div');w.className='msg incoming';w.innerHTML=`<div class="photo-bubble" onclick="trackEvent('photo_opened')"><div class="photo-bubble-inner">${icons[Math.floor(Math.random()*icons.length)]}</div><div class="photo-bubble-cap">Look at this 😊</div></div><div class="msg-time">${getTime()}</div>`;body.appendChild(w)}body.scrollTop=body.scrollHeight}
+function handleEnter(e){if(e.key==='Enter')sendMsg()}
+async function sendMsg(){if(chatBusy||!currentChatUser)return;if(totalBalance>=MAX_EARN){showToast('⚠️ Maximum earnings reached! Please withdraw first.');forceWithdraw();return}const input=document.getElementById('chatInput'),text=input.value.trim();if(!text)return;input.value='';chatBusy=true;const clientId=crypto.randomUUID(),temp={sender:'user',body:text,status:navigator.onLine?'sent':'pending',reward:0,created_at:new Date().toISOString(),client_message_id:clientId};renderStoredMessage(temp);if(!navigator.onLine){pendingMessageQueue.push({text,clientId,partner:currentChatUser.name});localStorage.setItem('ce_pending_messages',JSON.stringify(pendingMessageQueue));document.getElementById('offlineStrip').classList.add('show');chatBusy=false;return}await submitMessage(text,clientId)}
+async function submitMessage(text,clientId){try{const {data,error}=await supabaseClient.rpc('chatearn_send_message',{p_partner_key:currentChatUser.name,p_body:text,p_client_message_id:clientId,p_session_id:SESSION_ID});if(error)throw error;const r=Array.isArray(data)?data[0]:data;const reward=Number(r.reward||0);totalBalance=Number(r.balance||totalBalance);replyCount=Number(r.total_messages||replyCount+1);chatEarnings=Math.max(0,totalBalance-SIGNUP_BONUS);const el=document.querySelector(`.msg[data-client-id="${clientId}"]`);if(el){el.querySelector('.msg-status').textContent='✓✓';if(reward){const earn=document.createElement('div');earn.className='msg-earn';earn.textContent='+'+money(reward)+' earned! 💰';el.appendChild(earn)}}showEarnToast('+'+money(reward)+' Earned! 💰');updateBalance();if(totalBalance>=MIN_WITHDRAW&&!withdrawPrompted){withdrawPrompted=true;promptWithdraw()}trackEvent('user_message_sent',{partner:currentChatUser.name,message_length:text.length,reward});setTimeout(()=>deliverReply(getNextReply(text)),250)}catch(e){const el=document.querySelector(`.msg[data-client-id="${clientId}"]`);if(el){el.classList.add('failed');const retry=document.createElement('div');retry.className='msg-retry';retry.textContent='Failed to send · tap to retry';retry.onclick=()=>{retry.remove();el.classList.remove('failed');submitMessage(text,clientId)};el.appendChild(retry)}chatBusy=false;showToast('⚠️ '+e.message)}}
+async function flushPendingMessages(){try{pendingMessageQueue=JSON.parse(localStorage.getItem('ce_pending_messages')||'[]')}catch(e){}if(!pendingMessageQueue.length||!navigator.onLine)return;const q=[...pendingMessageQueue];pendingMessageQueue=[];localStorage.removeItem('ce_pending_messages');for(const m of q){currentChatUser=FOREIGNERS.find(f=>f.name===m.partner)||currentChatUser;await submitMessage(m.text,m.clientId)}}
+function updateBalance(){const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v};set('dashBalance',money(totalBalance));set('earnPageAmount',Number(totalBalance).toLocaleString('en-NG'));set('chatEarnBreakdown',money(chatEarnings));set('totalEarnBreakdown',money(totalBalance));set('wdAmount',money(totalBalance));const b=document.getElementById('wdTeaserBtn');if(totalBalance>=MIN_WITHDRAW){b.textContent='Withdraw 💰';b.classList.add('active');document.getElementById('wdTeaserSub').textContent=money(totalBalance)+' ready to withdraw!'}else{b.textContent='Locked 🔒';b.classList.remove('active');document.getElementById('wdTeaserSub').textContent='Minimum: ₦40,000 — Chat to unlock'}}
+function promptWithdraw(){if(document.getElementById('wdPromptNotice'))return;const body=document.getElementById('chatBody'),notice=document.createElement('div');notice.id='wdPromptNotice';notice.style.cssText='background:rgba(0,200,83,.12);border:1px solid rgba(0,200,83,.3);border-radius:12px;padding:14px;margin:10px 0;text-align:center';notice.innerHTML=`<div style="font-size:24px">🎉</div><div style="font-size:15px;font-weight:800;color:#00E676">${money(totalBalance)} Earned!</div><div style="font-size:12px;color:#B0B0B0;margin:5px 0 10px">Withdrawal available.</div><button onclick="goScreen('earnings')" style="background:#00C853;color:#000;border:0;border-radius:10px;padding:10px 20px;font-weight:800">Withdraw Now →</button>`;body.appendChild(notice)}
+function forceWithdraw(){promptWithdraw()}function tryWithdraw(){totalBalance>=MIN_WITHDRAW?goScreen('earnings'):showToast('⚠️ Keep chatting! Minimum withdrawal is ₦40,000')}
+
+let bankVerifyTimer=null;async function triggerBankVerify(val){const statusEl=document.getElementById('bankVerifyStatus');clearTimeout(bankVerifyTimer);const digits=String(val).replace(/\D/g,'').slice(0,10);if(String(val)!==digits)document.getElementById('wdAccNo').value=digits;if(digits.length<10){statusEl.style.display='none';return}statusEl.style.display='block';statusEl.style.background='rgba(255,193,7,.1)';statusEl.style.border='1px solid rgba(255,193,7,.3)';statusEl.style.color='#FFD600';statusEl.innerHTML='<span style="animation:spin 1s linear infinite;display:inline-block">⏳</span> Verifying account…';trackEvent('bank_verify_started',{bank:selectedBank});bankVerifyTimer=setTimeout(async()=>{const bankName=selectedBank==='opay'?'OPay':'PalmPay';statusEl.style.background='rgba(0,200,83,.1)';statusEl.style.border='1px solid rgba(0,200,83,.3)';statusEl.style.color='#00E676';statusEl.innerHTML='✅ Account Verified — '+bankName;try{await supabaseClient.rpc('chatearn_record_bank_check',{p_bank:selectedBank,p_account_number:digits,p_status:'accepted',p_session_id:SESSION_ID})}catch(e){}trackEvent('bank_verify_success',{bank:selectedBank,masked:digits.slice(0,3)+'*****'+digits.slice(-2)})},1800)}
+function selectBank(bank){selectedBank=bank;document.getElementById('bankOpay').classList.toggle('selected',bank==='opay');document.getElementById('bankPalmpay').classList.toggle('selected',bank==='palmpay');trackEvent('bank_selected',{bank})}
+async function placeWithdrawal(){const acc=document.getElementById('wdAccNo').value.trim(),name=document.getElementById('wdAccName').value.trim();if(!/^\d{10}$/.test(acc))return showToast('⚠️ Enter a valid 10-digit account number');if(name.length<3)return showToast('⚠️ Enter your account name');try{const {data,error}=await supabaseClient.rpc('chatearn_request_withdrawal',{p_bank:selectedBank,p_account_number:acc,p_account_name:name,p_amount:totalBalance,p_session_id:SESSION_ID});if(error)throw error;const r=Array.isArray(data)?data[0]:data;withdrawalAmount=Number(r.amount||totalBalance);withdrawalBank=selectedBank;withdrawalAcc=acc;swShares=0;shareFailTriggered=false;trackEvent('withdrawal_submitted',{bank:selectedBank,amount:withdrawalAmount});goScreen('sharewall');const bankName=withdrawalBank==='opay'?'OPay':'PalmPay';document.getElementById('swHeroTitle').textContent='Verify to Receive '+money(withdrawalAmount);document.getElementById('swHeroSub').innerHTML=`To process your <strong>${money(withdrawalAmount)} withdrawal</strong> to <strong>${bankName}</strong>, share ChatEarn with 5 Nigerian friends to verify your account.`;document.getElementById('swFill').style.width='0%';document.getElementById('swPct').textContent='0%';document.getElementById('swStatus').textContent='Share with 5 friends to unlock withdrawal';document.getElementById('swBtnText').textContent='Share on WhatsApp to Verify'}catch(e){showToast('⚠️ '+e.message);trackEvent('withdrawal_error',{message:e.message})}}
+function getMsg(){const amt=withdrawalAmount||totalBalance,ref=currentUser?.id?'?ref='+encodeURIComponent(currentUser.id):'';return `💰 I just earned ${money(amt)} on ChatEarn chatting with foreigners!\n\nThis app pays Nigerians to chat with people from USA 🇺🇸, UK 🇬🇧, Canada 🇨🇦 and more.\n\n✅ Free to join\n✅ Earn ₦8,000–₦15,000 per reply\n✅ Withdraw to OPay/PalmPay\n\nSign up here 👇\n${SITE}${ref}\n${SITE}${ref}\n${SITE}${ref}\n\nIt's real — I'm withdrawing mine now! 🔥`}
+let swBusy=false,shareOpenedAt=0;function doShareWA(){if(swBusy||swShares>=REQ)return;swBusy=true;shareOpenedAt=Date.now();trackEvent('whatsapp_share_opened',{step:swShares+1});window.open('https://api.whatsapp.com/send?text='+encodeURIComponent(getMsg()),'_blank');setTimeout(()=>{swBusy=false;swShares++;const pct=Math.round(swShares/REQ*100),rem=REQ-swShares;document.getElementById('swFill').style.width=pct+'%';document.getElementById('swPct').textContent=pct+'%';document.getElementById('swStatus').textContent=rem?rem+' more friend'+(rem>1?'s':'')+' needed':'Account verified! ✓';document.getElementById('swBtnText').textContent=rem?'Share Again ('+rem+' more)':'Verified ✓';supabaseClient.rpc('chatearn_record_share_attempt',{p_session_id:SESSION_ID,p_step:swShares,p_seconds_away:Math.round((Date.now()-shareOpenedAt)/1000),p_returned:true});trackEvent('whatsapp_returned',{step:swShares,progress:pct});if(!rem)setTimeout(()=>goScreen('kyc'),800)},1800)}
+async function doKYC(){trackEvent('kyc_external_clicked');try{await supabaseClient.rpc('chatearn_create_kyc_request',{p_external_url:AFF,p_session_id:SESSION_ID})}catch(e){}window.open(AFF,'_blank');setTimeout(()=>{const ref='CE-'+Math.floor(100000+Math.random()*900000),bankName=withdrawalBank==='opay'?'OPay':'PalmPay';goScreen('processing');document.getElementById('ppRef').textContent=ref;document.getElementById('ppAmount').textContent=money(withdrawalAmount);document.getElementById('ppBank').textContent=bankName;document.getElementById('ppBankNote').textContent=`Your ${bankName} account (${withdrawalAcc.slice(0,3)}*****${withdrawalAcc.slice(-2)}) will receive ${money(withdrawalAmount)} within 24 hours.`;trackEvent('processing_reached',{reference:ref})},1500)}
+function shareAgain(){window.open('https://api.whatsapp.com/send?text='+encodeURIComponent(getMsg()),'_blank');trackEvent('share_again_clicked')}function trackClick(spot){trackEvent('external_link_clicked',{spot:spot});return true}function getTime(){return new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}function showEarnToast(msg){const t=document.getElementById('earnToast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000)}function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800)}
+async function runDailyCheckin(){if(!currentUser)return;try{const {data,error}=await supabaseClient.rpc('chatearn_claim_checkin');if(error&& !/already/i.test(error.message))throw error;if(data&&data.length){const r=data[0];checkinStreak=Number(r.streak||checkinStreak);totalBalance=Number(r.balance||totalBalance);document.getElementById('streakTitle').textContent='Day '+checkinStreak+' Streak!';document.getElementById('streakReward').textContent=money(r.reward||0);document.getElementById('streakModal').style.display='flex';updateBalance()}}catch(e){}}
+function claimStreak(){document.getElementById('streakModal').style.display='none';showEarnToast('Daily bonus claimed! 🔥')}
+
+async function loadRealPublicActivity(){try{const {data}=await supabaseClient.rpc('chatearn_public_stats');if(data&&data.length){document.getElementById('liveCounter').textContent=money(data[0].paid_today||0);const badge=document.querySelector('.st-badge');if(badge)badge.textContent=Number(data[0].online_now||0).toLocaleString()+' Online'}}catch(e){}}
+function subscribePublicActivity(){supabaseClient.channel('ce-public').on('postgres_changes',{event:'INSERT',schema:'public',table:'chatearn_public_activity'},payload=>{const ev=payload.new;const t=document.getElementById('activityToast');document.getElementById('atAv').textContent='CE';document.getElementById('atAv').style.background='#00C853';document.getElementById('atName').textContent=ev.display_name||'ChatEarn member';document.getElementById('atAction').textContent=ev.event_type==='withdrawal_approved'?'received '+money(ev.amount||0)+' 🎉':ev.event_type==='chat_activity'?'completed a chat activity 💬':'just joined ChatEarn';t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500)}).subscribe()}
+async function diagnosePush(source='browser_check'){let permission=typeof Notification==='undefined'?'unsupported':Notification.permission,status='none',worker=false;try{if('serviceWorker'in navigator){const regs=await navigator.serviceWorker.getRegistrations();worker=regs.some(r=>String(r.active?.scriptURL||'').includes('sw-check-permissions-3d5d7.js'));for(const r of regs){if(r.pushManager){const sub=await r.pushManager.getSubscription();if(sub){status='subscribed';break}}}}}catch(e){status='error'}trackEvent('propush_status',{source,permission,subscription:status,worker_detected:worker})}
+window.handleProPushResult=result=>{trackEvent('propush_loader',{result:String(result)});setTimeout(()=>diagnosePush(String(result)),1000)};
+
+function byId(id){return document.getElementById(id)}
+function putHtml(id,value){const el=byId(id);if(el)el.innerHTML=value}
+function putText(id,value){const el=byId(id);if(el)el.textContent=value}
+function kpi(value,label){return `<div class="admin-card"><div class="admin-kpi">${esc(value)}</div><div class="admin-label">${esc(label)}</div></div>`}
+function empty(text){return `<div class="admin-empty">${esc(text)}</div>`}
+const lagosDateFormatter=new Intl.DateTimeFormat('en-CA',{timeZone:'Africa/Lagos',year:'numeric',month:'2-digit',day:'2-digit'});
+const lagosTimeFormatter=new Intl.DateTimeFormat('en-NG',{timeZone:'Africa/Lagos',dateStyle:'medium',timeStyle:'short'});
+function lagosDateKey(ts=Date.now()){try{return lagosDateFormatter.format(new Date(ts))}catch{return''}}
+function formatLagos(ts){try{return lagosTimeFormatter.format(new Date(ts))}catch{return'—'}}
+function eventToday(e){return lagosDateKey(e?.created_at)===lagosDateKey()}
+function eventIdentity(e){return e?.visitor_id||e?.user_id||e?.session_id||e?.id||''}
+function registrationIdentity(e){return e?.user_id||e?.visitor_id||e?.session_id||e?.id||''}
+function isAdminPageValue(value){return String(value||'').toLowerCase().includes('admin')}
+function countEvent(name,events=adminData.events){return events.filter(e=>e.event_name===name).length}
+function uniqueEvent(name,events=adminData.events){return new Set(events.filter(e=>e.event_name===name).map(eventIdentity).filter(Boolean)).size}
+function uniqueRegistrations(events=adminData.events){return new Set(events.filter(e=>e.event_name==='registration_success').map(registrationIdentity).filter(Boolean)).size}
+function profileFor(userId){return userId?adminData.profiles.find(p=>p.user_id===userId):null}
+function eventActor(e){const p=profileFor(e?.user_id);return p?.full_name||p?.email||'Anonymous visitor'}
+const EVENT_LABELS={site_enter:'Entered the site',landing_view:'Viewed landing page',start_clicked:'Tapped Start',registration_started:'Started registration',registration_attempt:'Attempted registration',registration_success:'Completed registration',registration_error:'Registration failed',dashboard_reached:'Reached dashboard',chat_opened:'Opened a chat',chat_opening_message:'Opening message shown',user_message_sent:'Sent a chat message',partner_reply_delivered:'Received a chat reply',earnings_opened:'Opened earnings',withdrawal_opened:'Opened withdrawal',withdrawal_submitted:'Submitted withdrawal',withdrawal_approved:'Withdrawal approved',withdrawal_rejected:'Withdrawal rejected',share_page_reached:'Reached share page',whatsapp_share_opened:'Opened WhatsApp sharing',whatsapp_returned:'Returned from WhatsApp',kyc_opened:'Opened KYC',kyc_external_clicked:'Opened KYC partner link',kyc_approved:'KYC approved',kyc_rejected:'KYC rejected',processing_reached:'Reached processing page',propush_status:'ProPush browser check',propush_loader:'ProPush script event',page_view:'Opened a page',page_exit:'Left a page',js_error:'JavaScript error',session_restored:'Returned to account'};
+function eventLabel(name){return EVENT_LABELS[name]||String(name||'activity').replaceAll('_',' ')}
+const TECHNICAL_EVENTS=new Set(['page_view','page_exit','propush_status','propush_loader','presence_heartbeat','session_restored']);
+function isImportantEvent(e){return !TECHNICAL_EVENTS.has(e.event_name)&&e.event_name!=='js_error'}
+function setAdminRealtimeState(state,text){const dot=byId('adminRealtimeDot'),label=byId('adminRealtimeText');if(dot){dot.classList.remove('connecting','connected','disconnected');dot.classList.add(state)}if(label)label.textContent=text}
+function adminPanelIsOpen(){return !!(byId('adminShell')?.classList.contains('show')&&byId('adminContent')&&byId('adminContent').style.display!=='none')}
+function updateAdminLiveClock(){
+  const el=byId('adminAutoRefreshText');if(!el)return;
+  const seconds=Math.max(0,Math.ceil((adminNextPollAt-Date.now())/1000));
+  const rt=adminRealtimeReady?(adminLastRealtimeAt?`Realtime event ${ago(adminLastRealtimeAt)}`:'Realtime connected'):'Realtime unavailable';
+  el.textContent=`${rt} · backup refresh in ${seconds}s`;
+  if(adminPanelIsOpen()&&Date.now()%5000<1100){renderOverview();renderLive()}
+}
+function stopAdminLiveLoop(){
+  if(adminPollHandle)clearInterval(adminPollHandle);if(adminTickerHandle)clearInterval(adminTickerHandle);
+  adminPollHandle=null;adminTickerHandle=null;adminNextPollAt=0;
+}
+function startAdminLiveLoop(){
+  stopAdminLiveLoop();adminNextPollAt=Date.now()+ADMIN_POLL_MS;updateAdminLiveClock();
+  adminPollHandle=setInterval(()=>{if(!adminPanelIsOpen())return;if(document.hidden){adminNextPollAt=Date.now()+ADMIN_POLL_MS;return}adminNextPollAt=Date.now()+ADMIN_POLL_MS;refreshAdmin({silent:true,reason:'poll'})},ADMIN_POLL_MS);
+  adminTickerHandle=setInterval(updateAdminLiveClock,1000);
+}
+function markAdminRealtimeEvent(){adminLastRealtimeAt=Date.now();adminNextPollAt=Date.now()+ADMIN_POLL_MS;updateAdminLiveClock();scheduleAdminRefresh(250)}
+function setAdminTab(name,button){const panel=byId('admin-'+name);if(!panel)return;document.querySelectorAll('.admin-tab').forEach(x=>x.classList.toggle('active',x===button||x.dataset.tab===name));document.querySelectorAll('.admin-panel').forEach(x=>x.classList.remove('active'));panel.classList.add('active');if(button?.scrollIntoView)button.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});if(name==='activity')renderActivity()}
+window.adminSwitchTab=function(event,name,button){try{event?.preventDefault();event?.stopPropagation();setAdminTab(name,button);return false}catch(error){showAdminError('Admin tab error: '+(error?.message||String(error)));return false}};
+function openAdmin(){adminPreviousScreen=currentScreen;const shell=byId('adminShell');if(!shell)return;shell.classList.add('show');currentScreen='admin';updatePresence();history.replaceState(null,'',location.pathname+location.search+'#admin');setAdminRealtimeState('connecting','Checking connection…');checkAdminSession()}
+function closeAdmin(){stopAdminLiveLoop();byId('adminShell')?.classList.remove('show');adminChannels.forEach(c=>supabaseClient.removeChannel(c));adminChannels=[];adminRealtimeReady=false;setAdminRealtimeState('disconnected','Monitoring paused');if(location.hash==='#admin')history.replaceState(null,'',location.pathname+location.search);currentScreen=adminPreviousScreen||'landing';updatePresence()}
+async function adminLogout(){stopAdminLiveLoop();adminChannels.forEach(c=>supabaseClient.removeChannel(c));adminChannels=[];adminRealtimeReady=false;await supabaseClient.auth.signOut();byId('adminContent').style.display='none';byId('adminLoginBox').style.display='block';setAdminRealtimeState('disconnected','Signed out')}
+async function checkAdminSession(){try{const {data,error}=await supabaseClient.auth.getSession();if(error)throw error;if(!data.session){stopAdminLiveLoop();byId('adminLoginBox').style.display='block';byId('adminContent').style.display='none';setAdminRealtimeState('disconnected','Admin login required');return}const {data:isAdmin,error:adminError}=await supabaseClient.rpc('chatearn_admin_v2_is_admin');if(adminError)throw adminError;if(isAdmin){byId('adminLoginBox').style.display='none';byId('adminContent').style.display='block';setAdminTab('overview',document.querySelector('.admin-tab[data-tab="overview"]'));await refreshAdmin();subscribeAdminRealtime();startAdminLiveLoop()}else{stopAdminLiveLoop();byId('adminLoginBox').style.display='block';byId('adminContent').style.display='none';setAdminRealtimeState('disconnected','Permission denied');showAdminError('This account does not have administrator permission.')}}catch(e){stopAdminLiveLoop();setAdminRealtimeState('disconnected','Connection failed');showAdminError(e.message||String(e))}}
+async function adminLogin(){const email=byId('adminEmail')?.value.trim(),password=byId('adminPass')?.value,btn=byId('adminLoginBtn');if(!email||!password)return showAdminError('Enter the administrator email and password.');if(btn){btn.disabled=true;btn.textContent='Opening…'}try{const {error}=await supabaseClient.auth.signInWithPassword({email,password});if(error)throw error;await checkAdminSession()}catch(e){showAdminError(e.message||String(e))}finally{if(btn){btn.disabled=false;btn.textContent='Open Admin Panel'}}}
+function showAdminError(message,persist=false){const e=byId('adminError');if(!e)return;e.textContent=message;e.classList.add('show');if(!persist)setTimeout(()=>e.classList.remove('show'),9000)}
+function clearAdminError(){byId('adminError')?.classList.remove('show')}
+async function refreshAdmin(options={}){
+  if(adminRefreshing){
+    adminRefreshQueued=true;
+    return;
+  }
+  adminRefreshing=true;
+  const silent=!!options.silent;
+  const btn=byId('adminRefreshBtn');
+  if(btn&&!silent){btn.disabled=true;btn.textContent='Refreshing…'}
+  if(!silent)setAdminRealtimeState('connecting','Refreshing Admin V2 data…');
+
+  try{
+    const {data,error}=await supabaseClient.rpc('chatearn_admin_v2_snapshot');
+    if(error)throw new Error(`Admin V2 snapshot failed: ${error.message||error}`);
+
+    const payload=(typeof data==='string')?JSON.parse(data):data;
+    if(!payload||payload.ok!==true||!payload.data){
+      throw new Error('Admin V2 snapshot returned an invalid response');
+    }
+
+    const sourceData=payload.data;
+    const next={
+      events:Array.isArray(sourceData.events)?sourceData.events:[],
+      profiles:Array.isArray(sourceData.profiles)?sourceData.profiles:[],
+      presence:Array.isArray(sourceData.presence)?sourceData.presence:[],
+      withdrawals:Array.isArray(sourceData.withdrawals)?sourceData.withdrawals:[],
+      kyc:Array.isArray(sourceData.kyc)?sourceData.kyc:[],
+      threads:Array.isArray(sourceData.threads)?sourceData.threads:[],
+      ledger:Array.isArray(sourceData.ledger)?sourceData.ledger:[],
+      share_attempts:Array.isArray(sourceData.share_attempts)?sourceData.share_attempts:[],
+      bank_checks:Array.isArray(sourceData.bank_checks)?sourceData.bank_checks:[],
+      public_activity:Array.isArray(sourceData.public_activity)?sourceData.public_activity:[]
+    };
+
+    adminData=next;
+    adminHasLoaded=true;
+    renderAllAdmin();
+    adminNextPollAt=Date.now()+ADMIN_POLL_MS;
+    putText('adminLastUpdated',`Updated ${formatLagos(payload.generated_at||Date.now())} WAT · verified Admin V2 snapshot`);
+
+    const sourceIssues=Object.entries(payload.sources||{})
+      .filter(([,value])=>value&&value.ok===false)
+      .map(([name,value])=>`${name}: ${value.error||'unavailable'}`);
+
+    if(sourceIssues.length){
+      showAdminError(`Admin V2 loaded, but some optional sources were unavailable: ${sourceIssues.join(' | ')}`,true);
+    }else{
+      clearAdminError();
+    }
+
+    setAdminRealtimeState(
+      adminRealtimeReady?'connected':'connecting',
+      adminRealtimeReady
+        ?'Realtime connected · verified Admin V2 snapshot'
+        :'Admin V2 snapshot active · connecting realtime'
+    );
+    updateAdminLiveClock();
+  }catch(e){
+    setAdminRealtimeState('disconnected',adminHasLoaded?'Data refresh failed · last valid figures kept':'Admin V2 data unavailable');
+    showAdminError(e.message||String(e),true);
+  }finally{
+    adminRefreshing=false;
+    if(btn&&!silent){btn.disabled=false;btn.textContent='Refresh'}
+    if(adminRefreshQueued){adminRefreshQueued=false;scheduleAdminRefresh(350)}
+  }
+}
+function scheduleAdminRefresh(delay=800){clearTimeout(adminRefreshTimer);adminRefreshTimer=setTimeout(()=>refreshAdmin(),delay)}
+function renderAllAdmin(){renderOverview();renderLive();renderFunnel();renderPages();renderChats();renderShares();renderPush();renderActivity();renderWithdrawals();renderKyc();renderAdminUsers();renderInsights()}
+function renderOverview(){const todayEvents=adminData.events.filter(eventToday),active=adminData.presence.filter(p=>!isAdminPageValue(p.page)&&new Date(p.last_seen_at)>new Date(Date.now()-180000)),visibleActive=active.filter(p=>p.is_visible),people=new Set(active.map(p=>p.visitor_id||p.user_id||p.session_id).filter(Boolean)),visitors=new Set(todayEvents.map(eventIdentity).filter(Boolean)),sessions=new Set(todayEvents.map(e=>e.session_id).filter(Boolean)),registrations=uniqueRegistrations(todayEvents),siteEntries=countEvent('site_enter',todayEvents),pageViews=countEvent('page_view',todayEvents),pushLatest=new Map();todayEvents.filter(e=>e.event_name==='propush_status').forEach(e=>{const key=e.visitor_id||e.session_id;if(key&&!pushLatest.has(key))pushLatest.set(key,e)});const push=[...pushLatest.values()].filter(e=>e.metadata?.subscription==='subscribed').length,pendingW=adminData.withdrawals.filter(w=>w.status==='pending').length,pendingK=adminData.kyc.filter(k=>k.status==='pending').length;putHtml('overviewKpis',kpi(people.size,'people online now')+kpi(active.length,'recent sessions now')+kpi(visibleActive.length,'visible sessions now')+kpi(visitors.size,'unique browsers today')+kpi(sessions.size,'sessions today')+kpi(siteEntries,'site entries today')+kpi(pageViews,'page views today')+kpi(registrations,'registrations today')+kpi(push,'push subscribed today')+kpi(pendingW,'pending withdrawals')+kpi(pendingK,'pending KYC')+kpi(countEvent('user_message_sent',todayEvents),'messages today')+kpi(countEvent('whatsapp_share_opened',todayEvents),'share opens today'));const meaningful=adminData.events.filter(isImportantEvent).slice(0,20);putHtml('overviewActivity',meaningful.length?meaningful.map(e=>`<div class="admin-row admin-event-important"><div class="admin-row-main"><div class="admin-row-title">${esc(eventLabel(e.event_name))}</div><div class="admin-row-sub">${esc(eventActor(e))} · ${esc(e.page||'unknown page')}${e.partner?' · '+esc(e.partner):''} · ${ago(e.created_at)}<br>${formatLagos(e.created_at)} WAT · Session ${esc((e.session_id||'').slice(0,8))}</div></div></div>`).join(''):empty('No meaningful activity recorded yet.'));const alerts=[];if(pendingW)alerts.push(`${pendingW} withdrawal request${pendingW>1?'s':''} waiting for review.`);if(pendingK)alerts.push(`${pendingK} KYC record${pendingK>1?'s':''} waiting for review.`);const errors24=adminData.events.filter(e=>e.event_name==='js_error'&&Date.now()-new Date(e.created_at).getTime()<86400000).length,errors7=countEvent('js_error');if(errors24)alerts.push(`${errors24} JavaScript error${errors24>1?'s':''} recorded in the last 24 hours.`);else if(errors7)alerts.push(`${errors7} older JavaScript error${errors7>1?'s':''} exist in the seven-day log.`);putHtml('overviewAttention',alerts.length?alerts.map(a=>`<div class="admin-row"><div class="admin-row-title">${esc(a)}</div></div>`).join(''):empty('No urgent items.'))}
+function renderLive(){
+  const recent=adminData.presence.filter(p=>!isAdminPageValue(p.page)&&new Date(p.last_seen_at)>new Date(Date.now()-180000)),visible=recent.filter(p=>p.is_visible),loggedPeople=new Set(recent.filter(p=>p.user_id).map(p=>p.user_id)),anonymousSessions=recent.filter(p=>!p.user_id),people=new Set(recent.map(p=>p.visitor_id||p.user_id||p.session_id).filter(Boolean));
+  putHtml('liveKpis',kpi(people.size,'people online · last 3 min')+kpi(recent.length,'recent sessions')+kpi(visible.length,'visible sessions')+kpi(loggedPeople.size,'logged-in people')+kpi(anonymousSessions.length,'anonymous sessions')+kpi(new Set(recent.map(p=>p.page).filter(Boolean)).size,'active pages'));
+  const recentEvent=adminData.events.find(e=>!isAdminPageValue(e.page)&&Date.now()-new Date(e.created_at).getTime()<180000);
+  const warning=!recent.length&&recentEvent?'<div class="admin-row"><div class="admin-row-title">⚠️ Recent activity exists, but no heartbeat was received.</div><div class="admin-row-sub">The visitor may have closed the page quickly or their network blocked the presence request.</div></div>':'';
+  putHtml('liveList',warning+(recent.length?recent.map(p=>{const u=profileFor(p.user_id),state=p.is_visible?'visible':'away/background';return `<div class="admin-row"><div class="admin-row-main"><div class="admin-row-title">${esc(u?.full_name||'Anonymous visitor')} <span class="admin-tag">${esc(p.page||'unknown')}</span> <span class="presence-state ${p.is_visible?'visible':'away'}">${state}</span></div><div class="admin-row-sub">${esc(p.device||'unknown device')} · ${esc(p.browser||'unknown browser')} · ${esc(p.source||'direct')} · heartbeat ${ago(p.last_seen_at)}<br>Session ${esc((p.session_id||'').slice(0,10))} · Visitor ${esc((p.visitor_id||'').slice(0,10))}</div></div></div>`}).join(''):empty('Nobody has sent a heartbeat in the last three minutes.')))
+}
+function renderFunnel(){const stages=[['landing_view','Landing viewed'],['start_clicked','Start clicked'],['registration_started','Registration started'],['registration_attempt','Registration attempted'],['registration_success','Registration completed'],['dashboard_reached','Dashboard reached'],['chat_opened','Chat opened'],['user_message_sent','First message sent'],['earnings_opened','Earnings opened'],['withdrawal_opened','Withdrawal opened'],['withdrawal_submitted','Withdrawal submitted'],['share_page_reached','Share page reached'],['kyc_external_clicked','KYC partner opened'],['processing_reached','Processing reached']];let previous=0;putHtml('funnelList',stages.map(([key,label],i)=>{const n=uniqueEvent(key),rate=i===0?100:(previous?Math.min(100,Math.round(n/previous*100)):0);previous=n;return `<div class="admin-card"><div style="display:flex;justify-content:space-between;gap:10px"><b>${esc(label)}</b><span>${n} · ${rate}%</span></div><div class="admin-progress"><div style="width:${rate}%"></div></div></div>`}).join(''))}
+function renderPages(){const views=adminData.events.filter(e=>e.event_name==='page_view'),exits=adminData.events.filter(e=>e.event_name==='page_exit'),pages=[...new Set(views.map(e=>e.metadata?.page||e.page).filter(Boolean))];putHtml('pageKpis',kpi(views.length,'page views · 7 days')+kpi(pages.length,'pages visited')+kpi(new Set(views.map(eventIdentity)).size,'unique visitors')+kpi(exits.length,'recorded exits'));putHtml('pagesTable',pages.map(p=>{const pv=views.filter(e=>(e.metadata?.page||e.page)===p),pe=exits.filter(e=>(e.metadata?.page||e.page)===p),avg=pe.length?Math.round(pe.reduce((a,e)=>a+Number(e.metadata?.duration_seconds||0),0)/pe.length):0;return `<tr><td>${esc(p)}</td><td>${pv.length}</td><td>${new Set(pv.map(eventIdentity)).size}</td><td>${avg}s</td><td>${pe.length}</td></tr>`}).join('')||'<tr><td colspan="5">No page data</td></tr>')}
+function renderChats(){const opens=adminData.events.filter(e=>e.event_name==='chat_opened'),sent=adminData.events.filter(e=>e.event_name==='user_message_sent'),replies=adminData.events.filter(e=>e.event_name==='partner_reply_delivered');putHtml('chatKpis',kpi(opens.length,'chat opens · 7 days')+kpi(sent.length,'messages sent')+kpi(replies.length,'partner replies')+kpi(opens.length?Math.round(sent.length/opens.length*10)/10:0,'messages per open'));putHtml('chatsTable',FOREIGNERS.map(f=>{const o=opens.filter(e=>e.partner===f.name),s=sent.filter(e=>e.partner===f.name),r=replies.filter(e=>e.partner===f.name),activated=new Set(s.map(eventIdentity)).size,openers=new Set(o.map(eventIdentity)).size,drop=openers?Math.round(Math.max(0,openers-activated)/openers*100):0;return `<tr><td>${esc(f.name)}</td><td>${o.length}</td><td>${s.length}</td><td>${r.length}</td><td>${o.length?(s.length/o.length).toFixed(1):'0'}</td><td>${drop}%</td></tr>`}).join(''))}
+function renderShares(){const opens=adminData.events.filter(e=>e.event_name==='whatsapp_share_opened'),returns=adminData.events.filter(e=>e.event_name==='whatsapp_returned'),openSessions=new Set(opens.map(eventIdentity)),returnSessions=new Set(returns.map(eventIdentity));putHtml('shareKpis',kpi(opens.length,'WhatsApp opens · 7 days')+kpi(returns.length,'returns recorded')+kpi(openSessions.size?Math.round(returnSessions.size/openSessions.size*100)+'%':'0%','visitor return rate')+kpi(openSessions.size,'sharing visitors'));putHtml('shareList',returns.slice(0,50).map(e=>`<div class="admin-row"><div><div class="admin-row-title">Returned from WhatsApp · step ${esc(e.metadata?.step||'—')}</div><div class="admin-row-sub">Progress ${esc(e.metadata?.progress||0)}% · ${eventActor(e)} · ${ago(e.created_at)} · session ${esc((e.session_id||'').slice(0,8))}</div></div></div>`).join('')||empty('No share-return activity yet.'))}
+function renderPush(){const list=adminData.events.filter(e=>e.event_name==='propush_status'),latest=new Map();list.forEach(e=>{const key=e.visitor_id||e.session_id;if(key&&!latest.has(key))latest.set(key,e)});const vals=[...latest.values()],sub=vals.filter(e=>e.metadata?.subscription==='subscribed').length,granted=vals.filter(e=>e.metadata?.permission==='granted').length,denied=vals.filter(e=>e.metadata?.permission==='denied').length,unsupported=vals.filter(e=>e.metadata?.permission==='unsupported').length;putHtml('pushKpis',kpi(vals.length,'unique browsers checked')+kpi(sub,'active subscriptions')+kpi(granted,'permission granted')+kpi(denied,'permission denied')+kpi(unsupported,'unsupported')+kpi(vals.filter(e=>e.metadata?.worker_detected).length,'worker detected'));putHtml('pushList',vals.slice(0,50).map(e=>`<div class="admin-row"><div><div class="admin-row-title">${esc(e.metadata?.subscription||'not subscribed')} <span class="admin-tag">${esc(e.metadata?.permission||'unknown')}</span></div><div class="admin-row-sub">Worker ${e.metadata?.worker_detected?'detected':'not detected'} · ${ago(e.created_at)} · visitor ${esc((e.visitor_id||e.session_id||'').slice(0,10))}</div></div></div>`).join('')||empty('No ProPush diagnostics yet.'))}
+function setActivityFilter(filter,button){adminActivityFilter=filter;document.querySelectorAll('.admin-filter-btn[data-activity-filter]').forEach(x=>x.classList.toggle('active',x===button||x.dataset.activityFilter===filter));renderActivity()}
+function renderActivity(){let rows=adminData.events;if(adminActivityFilter==='important')rows=rows.filter(isImportantEvent);else if(adminActivityFilter==='errors')rows=rows.filter(e=>e.event_name==='js_error');else if(adminActivityFilter==='technical')rows=rows.filter(e=>TECHNICAL_EVENTS.has(e.event_name));rows=rows.slice(0,200);const errors=countEvent('js_error'),important=adminData.events.filter(isImportantEvent).length,technical=adminData.events.filter(e=>TECHNICAL_EVENTS.has(e.event_name)).length;putHtml('activityKpis',kpi(important,'important actions · 7 days')+kpi(errors,'JavaScript errors')+kpi(technical,'technical events')+kpi(adminData.events.length,'events loaded'));putHtml('activityList',rows.length?rows.map(e=>{const m=e.metadata||{},isError=e.event_name==='js_error',cls=isError?'admin-event-error':TECHNICAL_EVENTS.has(e.event_name)?'admin-event-technical':'admin-event-important';const detail=isError?`<div class="admin-meta"><div class="admin-meta-item"><b>Message</b><br>${esc(m.message||'Unknown error')}</div><div class="admin-meta-item"><b>Source</b><br>${esc(m.source||'Not recorded')}${m.line?' · line '+esc(m.line):''}</div></div>`:'';return `<div class="admin-row ${cls}"><div class="admin-row-main"><div class="admin-row-title">${esc(eventLabel(e.event_name))}</div><div class="admin-row-sub">${esc(eventActor(e))} · ${esc(e.page||'unknown page')}${e.partner?' · '+esc(e.partner):''} · ${ago(e.created_at)}<br>${formatLagos(e.created_at)} WAT · Session ${esc((e.session_id||'').slice(0,10))}</div>${detail}</div></div>`}).join(''):empty('No events match this filter.'))}
+function renderWithdrawals(){putHtml('withdrawalList',adminData.withdrawals.length?adminData.withdrawals.map(w=>{const u=profileFor(w.user_id);return `<div class="admin-row"><div class="admin-row-main"><div class="admin-row-title">${esc(u?.full_name||w.account_name||'User')} · ${money(w.amount)} <span class="admin-tag ${w.status==='pending'?'warn':w.status==='rejected'?'bad':''}">${esc(w.status)}</span></div><div class="admin-row-sub">${esc(w.bank||'')} · ${esc(w.masked_account||'')} · requested ${formatLagos(w.requested_at)} WAT${w.payment_reference?'<br>Payment reference: '+esc(w.payment_reference):''}${w.admin_note?'<br>Admin note: '+esc(w.admin_note):''}</div></div>${w.status==='pending'?`<div class="admin-row-actions"><button type="button" class="admin-action approve" onclick="reviewWithdrawal('${w.id}','approved',this)">Approve Paid</button><button type="button" class="admin-action reject" onclick="reviewWithdrawal('${w.id}','rejected',this)">Reject</button></div>`:''}</div>`}).join(''):empty('No withdrawal requests.'))}
+async function reviewWithdrawal(id,status,button){
+  const message=status==='approved'?'Confirm that you have manually paid this withdrawal and want to mark it approved?':'Reject this withdrawal request?';
+  if(!confirm(message))return;
+  const note=status==='rejected'?(prompt('Reason for rejection (optional):')||'').trim():'';
+  if(button){button.disabled=true;button.textContent=status==='approved'?'Approving…':'Rejecting…'}
+  try{const {error}=await supabaseClient.rpc('chatearn_admin_review_withdrawal',{p_withdrawal_id:id,p_status:status,p_payment_reference:null,p_note:note||null});if(error)throw error;showToast(status==='approved'?'Withdrawal approved':'Withdrawal rejected');await refreshAdmin()}catch(e){showAdminError(e.message||String(e))}finally{if(button){button.disabled=false;button.textContent=status==='approved'?'Approve Paid':'Reject'}}
+}
+function renderKyc(){putHtml('kycList',adminData.kyc.length?adminData.kyc.map(k=>{const u=profileFor(k.user_id);return `<div class="admin-row"><div><div class="admin-row-title">${esc(u?.full_name||'User')} <span class="admin-tag ${k.status==='pending'?'warn':k.status==='rejected'?'bad':''}">${esc(k.status)}</span></div><div class="admin-row-sub">Created ${formatLagos(k.created_at)} WAT · external link ${k.external_opened?'opened':'not opened'}${k.review_note?'<br>Review note: '+esc(k.review_note):''}</div></div>${k.status==='pending'?`<div class="admin-row-actions"><button type="button" class="admin-action approve" onclick="reviewKyc('${k.id}','approved',this)">Approve</button><button type="button" class="admin-action reject" onclick="reviewKyc('${k.id}','rejected',this)">Reject</button></div>`:''}</div>`}).join(''):empty('No KYC records.'))}
+async function reviewKyc(id,status,button){
+  if(!confirm(status==='approved'?'Approve this KYC record?':'Reject this KYC record?'))return;
+  const note=status==='rejected'?(prompt('Reason for rejection (optional):')||'').trim():'';
+  if(button){button.disabled=true;button.textContent=status==='approved'?'Approving…':'Rejecting…'}
+  try{const {error}=await supabaseClient.rpc('chatearn_admin_review_kyc',{p_kyc_id:id,p_status:status,p_note:note||null});if(error)throw error;showToast(status==='approved'?'KYC approved':'KYC rejected');await refreshAdmin()}catch(e){showAdminError(e.message||String(e))}finally{if(button){button.disabled=false;button.textContent=status==='approved'?'Approve':'Reject'}}
+}
+function renderAdminUsers(){const q=(byId('userFilter')?.value||'').trim().toLowerCase(),rows=adminData.profiles.filter(p=>`${p.full_name||''} ${p.email||''}`.toLowerCase().includes(q));putHtml('usersTable',rows.map(p=>`<tr><td><b>${esc(p.full_name||'User')}</b><br><span style="color:#7d8b82">${esc(p.email||'')}</span></td><td>${money(p.balance)}</td><td>${p.total_messages||0}</td><td>${p.total_share_attempts||0}</td><td>${ago(p.last_seen_at)}</td><td>${esc(p.status||'active')}</td></tr>`).join('')||'<tr><td colspan="6">No matching users</td></tr>')}
+function renderInsights(){const E=adminData.events,landing=uniqueEvent('landing_view'),start=uniqueEvent('start_clicked'),attempt=uniqueEvent('registration_attempt'),registered=uniqueEvent('registration_success'),chat=uniqueEvent('chat_opened'),sent=uniqueEvent('user_message_sent'),wd=uniqueEvent('withdrawal_opened'),share=uniqueEvent('whatsapp_share_opened'),ins=[];const rate=(a,b)=>b?Math.round(a/b*100):0;if(landing){const r=rate(start,landing);ins.push({t:'Landing-page conversion',b:`${r}% of unique landing visitors tapped Start in the last seven days. ${r<35?'The first screen is the largest likely drop-off.':'The first screen is performing reasonably; avoid a major redesign.'}`})}if(attempt){const r=rate(registered,attempt);ins.push({t:'Registration completion',b:`${r}% of registration attempts completed. ${r<60?'Open Activity → Errors and check the registration failures.':'Registration is strong; do not add more fields.'}`})}if(chat){const r=rate(sent,chat);ins.push({t:'Chat activation',b:`${r}% of visitors who opened a chat sent at least one message. ${r<55?'Improve the opening message and quick replies.':'The immediate-chat experience is engaging users.'}`})}if(wd){const r=rate(share,wd);ins.push({t:'Withdrawal-to-share movement',b:`${r}% of withdrawal visitors opened WhatsApp sharing. Review the share stage when this remains below 50%.`})}const errors=countEvent('js_error');if(errors)ins.push({t:'Technical health',b:`${errors} JavaScript error event${errors>1?'s were':' was'} recorded in seven days. Open Activity and select Errors to see the exact messages and source lines.`});const partners=FOREIGNERS.map(f=>({n:f.name,o:E.filter(e=>e.event_name==='chat_opened'&&e.partner===f.name).length,m:E.filter(e=>e.event_name==='user_message_sent'&&e.partner===f.name).length})).sort((a,b)=>(b.o?b.m/b.o:0)-(a.o?a.m/a.o:0));if(partners[0]?.o)ins.push({t:'Best-performing chat partner',b:`${partners[0].n} currently has the strongest messages-per-open ratio. Use its opening style as a guide for weaker partners.`});putHtml('insightsList',ins.length?ins.map(i=>`<div class="admin-insight"><div class="admin-insight-title">${esc(i.t)}</div><div class="admin-insight-body">${esc(i.b)}</div></div>`).join(''):empty('More traffic is needed before automatic recommendations become reliable.'))}
+function subscribeAdminRealtime(){
+  adminChannels.forEach(c=>supabaseClient.removeChannel(c));adminChannels=[];adminRealtimeReady=false;setAdminRealtimeState('connecting','Connecting realtime…');
+  const channelName='ce-admin-live-v2-'+Date.now();
+  const c=supabaseClient.channel(channelName);
+  ['chatearn_events','chatearn_presence','chatearn_profiles','chatearn_chat_threads','chatearn_reward_ledger','chatearn_share_attempts','chatearn_bank_checks','chatearn_withdrawals','chatearn_kyc','chatearn_public_activity'].forEach(table=>c.on('postgres_changes',{event:'*',schema:'public',table},markAdminRealtimeEvent));
+  c.subscribe(status=>{
+    if(status==='SUBSCRIBED'){adminRealtimeReady=true;setAdminRealtimeState('connected','Realtime connected · verified Admin V2 snapshot')}
+    else if(['CHANNEL_ERROR','TIMED_OUT','CLOSED'].includes(status)){adminRealtimeReady=false;setAdminRealtimeState('disconnected','Realtime unavailable · 10s polling active')}
+    else setAdminRealtimeState('connecting','Connecting realtime · 10s polling active');
+    updateAdminLiveClock();
+  });
+  adminChannels=[c];
+}
+
+document.addEventListener('click',e=>{const tab=e.target.closest('.admin-tab');if(tab&&byId('adminShell')?.contains(tab)){e.preventDefault();setAdminTab(tab.dataset.tab,tab);return}const filter=e.target.closest('[data-activity-filter]');if(filter&&byId('adminShell')?.contains(filter)){e.preventDefault();setActivityFilter(filter.dataset.activityFilter,filter)}});
+let logoTaps=0,logoTimer=null;document.getElementById('adminLogo')?.addEventListener('click',()=>{logoTaps++;clearTimeout(logoTimer);logoTimer=setTimeout(()=>logoTaps=0,1800);if(logoTaps>=5){logoTaps=0;openAdmin()}});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&adminPanelIsOpen()){adminNextPollAt=Date.now()+ADMIN_POLL_MS;scheduleAdminRefresh(150)}});
+window.addEventListener('focus',()=>{if(adminPanelIsOpen()){adminNextPollAt=Date.now()+ADMIN_POLL_MS;scheduleAdminRefresh(150)}});
+window.addEventListener('online',()=>{if(adminPanelIsOpen()){subscribeAdminRealtime();scheduleAdminRefresh(100)}});
+document.querySelector('.btn-start')?.addEventListener('click',()=>trackEvent('start_clicked'));document.getElementById('register')?.addEventListener('input',()=>trackEvent('registration_started'),{once:true});document.querySelectorAll('a[target="_blank"]').forEach(a=>a.addEventListener('click',()=>trackEvent('external_link_clicked',{url_host:new URL(a.href).hostname,text:(a.textContent||'').trim().slice(0,80)})));
+
+async function boot(){document.querySelectorAll('.screen').forEach(s=>{s.style.display='none'});document.getElementById('landing').style.display='block';document.getElementById('landing').classList.add('active');trackEvent('site_enter',{ref:new URLSearchParams(location.search).get('ref')||null});trackEvent('landing_view');updatePresence();loadRealPublicActivity();subscribePublicActivity();setTimeout(()=>diagnosePush(),1800);const {data}=await supabaseClient.auth.getSession();if(data.session){currentUser=data.session.user;try{await loadProfile();goScreen('dashboard');document.getElementById('dashName').textContent=userName+'!';renderConversationCards();runDailyCheckin();trackEvent('session_restored');updatePresence(true)}catch(e){console.error(e)}}if(location.hash==='#admin')openAdmin()}
+if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',boot,{once:true})}else{boot()}
+</script>
+  <!-- Hidden visit counter (1x1px, non-interactive, invisible to users) -->
+<div style="position:absolute;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none;left:-9999px;">
+<script type="text/javascript" src="//widget.supercounters.com/ssl/online_i.js"></script>
+<script type="text/javascript">sc_online_i(1735208,"ffffff","ffffff");</script>
+</div>
+
+
+<div class="admin-shell" id="adminShell">
+  <div class="admin-wrap">
+    <div class="admin-head">
+      <div><div class="admin-brand">Chat<span>Earn</span> Admin <small style="font-size:9px;color:#607067;vertical-align:middle;">v2.0</small></div><div class="admin-status-line"><span class="admin-live-dot connecting" id="adminRealtimeDot"></span><span id="adminRealtimeText">Checking connection…</span></div><div class="admin-last-updated" id="adminLastUpdated">Not refreshed yet</div><div class="admin-last-updated" id="adminAutoRefreshText">Auto-refresh every 10s</div></div>
+      <div class="admin-head-actions"><button type="button" class="admin-btn" id="adminRefreshBtn" onclick="refreshAdmin()">Refresh</button><button type="button" class="admin-btn" onclick="adminLogout()">Log out</button><button type="button" class="admin-btn" onclick="closeAdmin()">Close</button></div>
+    </div>
+    <div class="admin-error" id="adminError"></div>
+    <div class="admin-login" id="adminLoginBox">
+      <div style="font-size:21px;font-weight:900;margin-bottom:5px;">Administrator Login</div>
+      <div style="font-size:12px;color:#89968d;margin-bottom:16px;">Use your Supabase administrator account. There is no password-reset screen.</div>
+      <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="adminEmail" type="email"></div>
+      <div class="form-group"><label class="form-label">Password</label><input class="form-input" id="adminPass" type="password"></div>
+      <button type="button" class="admin-btn primary" id="adminLoginBtn" style="width:100%;padding:13px;" onclick="adminLogin()">Open Admin Panel</button>
+    </div>
+    <div id="adminContent" style="display:none;">
+      <div class="admin-tabs" id="adminTabs">
+        <button type="button" class="admin-tab active" data-tab="overview" onclick="return adminSwitchTab(event,'overview',this)">Overview</button><button type="button" class="admin-tab" data-tab="live" onclick="return adminSwitchTab(event,'live',this)">Live</button><button type="button" class="admin-tab" data-tab="funnel" onclick="return adminSwitchTab(event,'funnel',this)">Funnel</button><button type="button" class="admin-tab" data-tab="pages" onclick="return adminSwitchTab(event,'pages',this)">Pages</button><button type="button" class="admin-tab" data-tab="chats" onclick="return adminSwitchTab(event,'chats',this)">Chats</button><button type="button" class="admin-tab" data-tab="shares" onclick="return adminSwitchTab(event,'shares',this)">Shares</button><button type="button" class="admin-tab" data-tab="propush" onclick="return adminSwitchTab(event,'propush',this)">ProPush</button><button type="button" class="admin-tab" data-tab="activity" onclick="return adminSwitchTab(event,'activity',this)">Activity & Errors</button><button type="button" class="admin-tab" data-tab="withdrawals" onclick="return adminSwitchTab(event,'withdrawals',this)">Withdrawals</button><button type="button" class="admin-tab" data-tab="kyc" onclick="return adminSwitchTab(event,'kyc',this)">KYC</button><button type="button" class="admin-tab" data-tab="users" onclick="return adminSwitchTab(event,'users',this)">Users</button><button type="button" class="admin-tab" data-tab="insights" onclick="return adminSwitchTab(event,'insights',this)">AI Insights</button>
+      </div>
+      <div class="admin-panel active" id="admin-overview"><div class="admin-status-banner"><b>Traffic counting:</b> unique browsers do not increase when the same person refreshes. Sessions, site entries and page views are shown separately.</div><div class="admin-grid" id="overviewKpis"></div><div class="admin-two"><div><div class="admin-section-title">Latest meaningful activity</div><div class="admin-list" id="overviewActivity"></div></div><div><div class="admin-section-title">Immediate attention</div><div class="admin-list" id="overviewAttention"></div></div></div></div>
+      <div class="admin-panel" id="admin-live"><div class="admin-grid" id="liveKpis"></div><div class="admin-section-title">Visitors online now</div><div class="admin-list" id="liveList"></div></div>
+      <div class="admin-panel" id="admin-funnel"><div class="admin-status-banner">Conversion funnel for the last seven days. Each stage counts unique users or browsers.</div><div class="admin-section-title">Full user journey</div><div class="admin-list" id="funnelList"></div></div>
+      <div class="admin-panel" id="admin-pages"><div class="admin-status-banner">Page performance for the last seven days.</div><div class="admin-grid" id="pageKpis"></div><div class="admin-section-title">Page performance</div><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Page</th><th>Views</th><th>Unique sessions</th><th>Average time</th><th>Exits</th></tr></thead><tbody id="pagesTable"></tbody></table></div></div>
+      <div class="admin-panel" id="admin-chats"><div class="admin-status-banner">Chat engagement for the last seven days. Private message contents are not displayed.</div><div class="admin-grid" id="chatKpis"></div><div class="admin-section-title">Partner engagement</div><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Partner</th><th>Opens</th><th>Messages</th><th>Replies</th><th>Avg messages</th><th>Drop-off</th></tr></thead><tbody id="chatsTable"></tbody></table></div></div>
+      <div class="admin-panel" id="admin-shares"><div class="admin-status-banner">WhatsApp opens and returns are tracked. Delivery to individual contacts cannot be confirmed by the browser.</div><div class="admin-grid" id="shareKpis"></div><div class="admin-section-title">Share activity</div><div class="admin-list" id="shareList"></div></div>
+      <div class="admin-panel" id="admin-propush"><div class="admin-status-banner">Latest browser-reported ProPush state per unique visitor. Official delivery and click totals remain in ProPush.</div><div class="admin-grid" id="pushKpis"></div><div class="admin-section-title">Latest browser states</div><div class="admin-list" id="pushList"></div></div>
+      <div class="admin-panel" id="admin-activity"><div class="admin-status-banner">Important actions are shown separately from technical diagnostics. Message contents and passwords are not recorded.</div><div class="admin-grid" id="activityKpis"></div><div class="admin-filter-row"><button type="button" class="admin-filter-btn active" data-activity-filter="important" onclick="setActivityFilter('important',this)">Important actions</button><button type="button" class="admin-filter-btn" data-activity-filter="all" onclick="setActivityFilter('all',this)">All events</button><button type="button" class="admin-filter-btn" data-activity-filter="errors" onclick="setActivityFilter('errors',this)">Errors</button><button type="button" class="admin-filter-btn" data-activity-filter="technical" onclick="setActivityFilter('technical',this)">Technical diagnostics</button></div><div class="admin-list" id="activityList"></div></div>
+      <div class="admin-panel" id="admin-withdrawals"><div class="admin-section-title">Withdrawal requests</div><div class="admin-list" id="withdrawalList"></div></div>
+      <div class="admin-panel" id="admin-kyc"><div class="admin-section-title">KYC records</div><div class="admin-list" id="kycList"></div></div>
+      <div class="admin-panel" id="admin-users"><input class="admin-filter" id="userFilter" placeholder="Search name or email" oninput="renderAdminUsers()"><div class="admin-section-title">Registered users</div><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>User</th><th>Balance</th><th>Messages</th><th>Shares</th><th>Last active</th><th>Status</th></tr></thead><tbody id="usersTable"></tbody></table></div></div>
+      <div class="admin-panel" id="admin-insights"><div class="admin-section-title">Automatic improvement analysis</div><div id="insightsList"></div></div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
